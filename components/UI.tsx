@@ -32,8 +32,8 @@ import PartnersSolar from './PartnersSolar';
 import InvestorsView from './InvestorsView';
 import Footer from './Footer';
 import EarlyAccessModal from './EarlyAccessModal';
+import PartnerLoginModal from './PartnerLoginModal';
 import LegalModal from './LegalModal';
-import { APP_URL } from '../lib/api';
 
 interface UIProps {
   view: AppView;
@@ -59,6 +59,25 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
 
   const [activePillar, setActivePillar] = useState(0);
   const [earlyAccessOpen, setEarlyAccessOpen] = useState(false);
+  const [partnerLoginOpen, setPartnerLoginOpen] = useState(false);
+  const [partnerLoginFailure, setPartnerLoginFailure] = useState<string | null>(null);
+
+  // The app sends a failed sign-in back here with ?partner_login=<reason>.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const reason = params.get('partner_login');
+    if (!reason) return;
+    setPartnerLoginFailure(reason);
+    setPartnerLoginOpen(true);
+    params.delete('partner_login');
+    const rest = params.toString();
+    window.history.replaceState(window.history.state, '', window.location.pathname + (rest ? `?${rest}` : '') + window.location.hash);
+  }, []);
+
+  const openPartnerLogin = () => {
+    setPartnerLoginFailure(null);
+    setPartnerLoginOpen(true);
+  };
   const [legalModal, setLegalModal] = useState<'privacy' | 'terms' | null>(null);
 
   // Demo data signal stream for Node Scan
@@ -332,12 +351,12 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
           {/* Zone 3: Actions (Theme switcher + GET EARLY ACCESS button) */}
           <div className="flex items-center space-x-2 sm:space-x-3">
             {/* Staff & channel-partner login (case-management app) */}
-            <a
-              href={APP_URL}
-              className={`hidden xl:inline whitespace-nowrap text-[10px] uppercase tracking-[0.2em] font-bold ${isLight ? 'text-slate-600 hover:text-slate-900' : 'text-white/70 hover:text-white'}`}
+            <button
+              onClick={openPartnerLogin}
+              className={`hidden lg:inline whitespace-nowrap text-[10px] uppercase tracking-[0.2em] font-bold ${isLight ? 'text-slate-600 hover:text-slate-900' : 'text-white/70 hover:text-white'}`}
             >
               Partner login
-            </a>
+            </button>
             {setTheme && (
               <div className={`flex items-center p-1 rounded-full border ${
                 isLight 
@@ -427,7 +446,7 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
           >
             Investors
           </button>
-          <a href={APP_URL} className={isLight ? 'text-slate-600' : 'text-white/70'}>Partner login</a>
+          <button onClick={openPartnerLogin} className={isLight ? 'text-slate-600' : 'text-white/70'}>Partner login</button>
         </div>
       </header>
 
@@ -952,6 +971,7 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
           <PartnersSolar 
             theme={theme} 
             onOpenEarlyAccess={() => setEarlyAccessOpen(true)} 
+            onOpenPartnerLogin={openPartnerLogin}
           />
         )}
 
@@ -981,6 +1001,14 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
         isOpen={earlyAccessOpen}
         onClose={() => setEarlyAccessOpen(false)}
         theme={theme}
+      />
+
+      {/* Tarang Solar workspace sign-in (posts to the app's /login/gateway) */}
+      <PartnerLoginModal
+        isOpen={partnerLoginOpen}
+        onClose={() => setPartnerLoginOpen(false)}
+        theme={theme}
+        failure={partnerLoginFailure}
       />
 
       {/* Privacy Policy / Terms Modal (Item 8) */}

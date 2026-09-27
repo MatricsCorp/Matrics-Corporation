@@ -27,9 +27,10 @@ import { FALLBACK_SUBSIDY, fetchSubsidy, inr, LEAD_CONSENT_LABEL, submitLead, ty
 interface PartnersSolarProps {
   theme?: AppTheme;
   onOpenEarlyAccess: () => void;
+  onOpenPartnerLogin?: () => void;
 }
 
-const PartnersSolar: React.FC<PartnersSolarProps> = ({ theme = 'orange', onOpenEarlyAccess }) => {
+const PartnersSolar: React.FC<PartnersSolarProps> = ({ theme = 'orange', onOpenEarlyAccess, onOpenPartnerLogin }) => {
   const isLight = theme === 'light';
   const isOrange = theme === 'orange';
 
@@ -168,6 +169,35 @@ const PartnersSolar: React.FC<PartnersSolarProps> = ({ theme = 'orange', onOpenE
             View Subsidy Table
           </a>
         </div>
+
+        {onOpenPartnerLogin && (
+          <div className={`mx-auto max-w-xl flex flex-col sm:flex-row items-center justify-between gap-4 p-4 sm:p-5 rounded-xl border text-left ${
+            isLight
+              ? 'bg-white/90 border-slate-200 shadow-lg'
+              : isOrange
+                ? 'bg-stone-950/75 border-amber-500/30 shadow-2xl'
+                : 'bg-zinc-950/80 border-white/10'
+          }`}>
+            <div className="space-y-1">
+              <div className="flex items-center space-x-2 text-[10px] font-mono uppercase tracking-[0.25em] text-[#db5319] font-bold">
+                <ShieldCheck size={12} />
+                <span>Tarang Solar Web Portal · Trial</span>
+              </div>
+              <p className={`text-xs leading-relaxed ${isLight ? 'text-slate-600' : 'text-white/70'}`}>
+                Staff, channel partners and their executives — sign in to manage cases, documents and follow-ups.
+              </p>
+            </div>
+            <button
+              onClick={onOpenPartnerLogin}
+              className={`shrink-0 inline-flex items-center space-x-2 px-6 py-3 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-md ${
+                isLight ? 'bg-slate-900 text-white hover:bg-slate-800' : 'bg-[#db5319] text-white hover:bg-[#c24610]'
+              }`}
+            >
+              <span>Partner Login</span>
+              <ArrowRight size={12} />
+            </button>
+          </div>
+        )}
       </section>
 
       {/* About Tarang Solar */}
