@@ -31,6 +31,7 @@ import HowItWorks from './HowItWorks';
 import PartnersSolar from './PartnersSolar';
 import InvestorsView from './InvestorsView';
 import Footer from './Footer';
+import AppDownload from './AppDownload';
 import EarlyAccessModal from './EarlyAccessModal';
 import PartnerLoginModal from './PartnerLoginModal';
 import LegalModal from './LegalModal';
@@ -346,6 +347,16 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
             >
               Investors
             </button>
+            <button 
+              onClick={() => setView('app')} 
+              className={`transition-all pb-1 ${
+                view === 'app' 
+                  ? 'text-[#db5319] border-b-2 border-[#db5319]' 
+                  : isLight ? 'text-slate-600 hover:text-slate-900' : 'text-white/70 hover:text-white'
+              }`}
+            >
+              App
+            </button>
           </nav>
 
           {/* Zone 3: Actions (Theme switcher + GET EARLY ACCESS button) */}
@@ -446,6 +457,12 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
           >
             Investors
           </button>
+          <button 
+            onClick={() => setView('app')} 
+            className={view === 'app' ? 'text-[#db5319]' : isLight ? 'text-slate-600' : 'text-white/70'}
+          >
+            App
+          </button>
           <button onClick={openPartnerLogin} className={isLight ? 'text-slate-600' : 'text-white/70'}>Partner login</button>
         </div>
       </header>
@@ -522,6 +539,16 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
                     }`}
                   >
                     Discover Ecosystem
+                  </button>
+                  <button 
+                    onClick={() => setView('app')} 
+                    className={`px-8 lg:px-10 py-4 font-black uppercase tracking-[0.25em] text-xs transition-all shadow-xl hover:scale-105 active:scale-95 border ${
+                      isOrange
+                        ? 'border-white/60 text-white hover:bg-white/10'
+                        : 'border-[#db5319] text-[#db5319] hover:bg-[#db5319]/10'
+                    }`}
+                  >
+                    Get the app
                   </button>
                 </div>
               </div>
@@ -982,6 +1009,11 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
           <InvestorsView 
             theme={theme} 
           />
+        )}
+
+        {/* VIEW 6: THE APP (download page for shops and reviewers) */}
+        {view === 'app' && (
+          <AppDownload theme={theme} />
         )}
 
       </main>

@@ -8,7 +8,7 @@ import Tablet from './Tablet';
 
 interface ExperienceProps {
   mousePos: { x: number; y: number };
-  currentView: 'landing' | 'ecosystem' | 'network' | 'partners' | 'investors' | 'quantum';
+  currentView: 'landing' | 'ecosystem' | 'network' | 'partners' | 'investors' | 'quantum' | 'app';
   theme?: 'orange' | 'light' | 'dark';
 }
 
