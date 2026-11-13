@@ -1,8 +1,9 @@
 
-import React, { useMemo, useRef, useState, useEffect } from 'react';
+import React, { Suspense, useMemo, useRef, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { Text } from '@react-three/drei';
+import SceneBoundary from './SceneBoundary';
 
 interface TabletProps {
   position?: [number, number, number];
@@ -96,8 +97,10 @@ const Tablet: React.FC<TabletProps> = ({ position, theme = 'orange' }) => {
           <meshBasicMaterial color="#ea580c" transparent opacity={isLight ? 0.75 : 0.6} />
         </mesh>
 
-        {/* Reflected Brand Name */}
+        {/* Reflected Brand Name (own Suspense: the globe doesn't wait for this font) */}
         <group ref={reflectionRef}>
+          <SceneBoundary>
+          <Suspense fallback={null}>
           <Text
             position={[0, 0, 0.001]}
             fontSize={0.35}
@@ -110,6 +113,8 @@ const Tablet: React.FC<TabletProps> = ({ position, theme = 'orange' }) => {
           >
             {displayText}
           </Text>
+          </Suspense>
+          </SceneBoundary>
         </group>
 
         {/* Corner Markers */}
