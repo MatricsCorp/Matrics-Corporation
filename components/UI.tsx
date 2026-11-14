@@ -35,6 +35,7 @@ import AppDownload from './AppDownload';
 import EarlyAccessModal from './EarlyAccessModal';
 import PartnerLoginModal from './PartnerLoginModal';
 import LegalModal from './LegalModal';
+import MatricsLogo from './MatricsLogo';
 
 interface UIProps {
   view: AppView;
@@ -326,23 +327,11 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
             aria-label="Matrics — home"
             className="shrink-0 flex items-center text-left group"
           >
-            {/* Logo: white lettering on Studio/Dark, dark lettering on Light. Both load once so switching theme doesn't flash. */}
-            <img
-              src="/brand/matrics-logo.webp"
-              alt="Matrics"
-              width={568}
-              height={132}
-              draggable={false}
-              className={`h-[18px] min-[22.5rem]:h-[26px] min-[24.375rem]:h-7 sm:h-9 xl:h-10 w-auto max-w-none select-none transition-transform duration-300 group-hover:scale-105 ${isLight ? 'hidden' : 'block'}`}
-            />
-            <img
-              src="/brand/matrics-logo-dark.webp"
-              alt={isLight ? 'Matrics' : ''}
-              aria-hidden={!isLight}
-              width={568}
-              height={132}
-              draggable={false}
-              className={`h-[18px] min-[22.5rem]:h-[26px] min-[24.375rem]:h-7 sm:h-9 xl:h-10 w-auto max-w-none select-none transition-transform duration-300 group-hover:scale-105 ${isLight ? 'block' : 'hidden'}`}
+            {/* Animated grid logo: light runs along the grid on load and every few seconds */}
+            <MatricsLogo
+              variant="header"
+              onLight={isLight}
+              className="h-[18px] min-[22.5rem]:h-[26px] min-[24.375rem]:h-7 sm:h-9 xl:h-10 transition-transform duration-300 group-hover:scale-105"
             />
           </button>
 

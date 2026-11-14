@@ -1,0 +1,197 @@
+/* Matrics grid logo: light runs along the grid, the dots flash, a sheen
+   sweeps the letters. Header: once on load, then every 9 s. Intro: the full
+   reveal, once (letters fill orange, sparks, embers). */
+
+.mlogo {
+  --mlogo-core: #fff4d6;
+  --mlogo-glow: #ffb547;
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+  flex-shrink: 0;
+}
+.mlogo-on-light {
+  --mlogo-core: #ff8a1f;
+  --mlogo-glow: #ff6a00;
+}
+.mlogo-base {
+  display: block;
+  max-width: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.mlogo-header .mlogo-base { height: 100%; width: auto; }
+.mlogo-intro .mlogo-base { width: 100%; height: auto; }
+
+.mlogo-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.mlogo-mask {
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+.mlogo-fx { overflow: visible; }
+
+/* ---------- pieces (hidden until animated) ---------- */
+.mlogo-run {
+  fill: none;
+  stroke: var(--mlogo-core);
+  stroke-linecap: round;
+  opacity: 0;
+}
+/* pathLength=1: dash lengths are fractions of each path */
+.mlogo-run-arc { stroke-dasharray: 0.13 1.3; stroke-dashoffset: 0.2; }
+.mlogo-run-line { stroke-dasharray: 0.55 1.7; stroke-dashoffset: 0.6; }
+/* glow = two wide faint copies under a bright core (no SVG filter) */
+.mlogo-streak-halo2 .mlogo-run { stroke: var(--mlogo-glow); stroke-opacity: 0.14; }
+.mlogo-streak-halo1 .mlogo-run { stroke: var(--mlogo-glow); stroke-opacity: 0.38; }
+.mlogo-header .mlogo-run-arc { stroke-width: 20px; }
+.mlogo-header .mlogo-run-line { stroke-width: 16px; }
+.mlogo-header .mlogo-streak-halo1 .mlogo-run-arc { stroke-width: 46px; }
+.mlogo-header .mlogo-streak-halo1 .mlogo-run-line { stroke-width: 38px; }
+.mlogo-header .mlogo-streak-halo2 .mlogo-run-arc { stroke-width: 90px; }
+.mlogo-header .mlogo-streak-halo2 .mlogo-run-line { stroke-width: 72px; }
+.mlogo-intro .mlogo-run-arc { stroke-width: 9px; }
+.mlogo-intro .mlogo-run-line { stroke-width: 7px; }
+.mlogo-intro .mlogo-streak-halo1 .mlogo-run-arc { stroke-width: 22px; }
+.mlogo-intro .mlogo-streak-halo1 .mlogo-run-line { stroke-width: 18px; }
+.mlogo-intro .mlogo-streak-halo2 .mlogo-run-arc { stroke-width: 44px; }
+.mlogo-intro .mlogo-streak-halo2 .mlogo-run-line { stroke-width: 34px; }
+
+.mlogo-node,
+.mlogo-ring,
+.mlogo-spark,
+.mlogo-ember {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.mlogo-ring { fill: none; stroke: var(--mlogo-glow); }
+.mlogo-spark { fill: var(--mlogo-core); }
+.mlogo-ember { fill: #ffc266; }
+
+.mlogo-glint {
+  opacity: 0;
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0) 20%, rgba(255, 255, 255, 0.85) 50%, rgba(255, 255, 255, 0) 80%) no-repeat;
+  background-size: 22% 100%;
+  background-position: -30% 0;
+}
+.mlogo-on-light .mlogo-glint {
+  background-image: linear-gradient(100deg, rgba(255, 196, 120, 0) 20%, rgba(255, 214, 160, 0.95) 50%, rgba(255, 196, 120, 0) 80%);
+}
+
+.mlogo-fill {
+  opacity: 0;
+  background: linear-gradient(100deg, #ff4d00 0%, #ff7a00 45%, #ffb300 100%);
+  clip-path: inset(0 66% 0 0);
+}
+.mlogo-edge {
+  opacity: 0;
+  background: linear-gradient(90deg, rgba(255, 246, 214, 0), rgba(255, 246, 214, 0.95), rgba(255, 246, 214, 0)) no-repeat;
+  background-size: 12% 100%;
+}
+
+/* ---------- header: on load, then every 9 s ---------- */
+.mlogo-header { --t0: 1s; --cycle: 9s; }
+.mlogo-header .mlogo-run-arc { animation: mlogo-arc-loop var(--cycle) linear calc(var(--t0) + var(--at)) infinite; }
+.mlogo-header .mlogo-run-line { animation: mlogo-line-loop var(--cycle) linear calc(var(--t0) + var(--at)) infinite; }
+.mlogo-header .mlogo-node { animation: mlogo-node-loop var(--cycle) ease-out calc(var(--t0) + var(--at)) infinite; }
+.mlogo-header .mlogo-ring { animation: mlogo-ring-loop var(--cycle) ease-out calc(var(--t0) + var(--at)) infinite; }
+.mlogo-header .mlogo-glint { animation: mlogo-glint-loop var(--cycle) ease-in-out calc(var(--t0) + 1.05s) infinite; }
+
+/* 1.3 s of 9 s = 14.4%; 0.4 s = 4.4% */
+@keyframes mlogo-arc-loop {
+  0% { opacity: 1; stroke-dashoffset: 0.2; }
+  14.4% { opacity: 1; stroke-dashoffset: -1.05; }
+  14.5%, 100% { opacity: 0; stroke-dashoffset: -1.05; }
+}
+@keyframes mlogo-line-loop {
+  0% { opacity: 1; stroke-dashoffset: 0.6; }
+  4.4% { opacity: 1; stroke-dashoffset: -1.05; }
+  4.5%, 100% { opacity: 0; stroke-dashoffset: -1.05; }
+}
+@keyframes mlogo-node-loop {
+  0% { opacity: 0; transform: scale(0.4); }
+  1.5% { opacity: 1; transform: scale(1.2); }
+  6%, 100% { opacity: 0; transform: scale(0.9); }
+}
+@keyframes mlogo-ring-loop {
+  0% { opacity: 0.9; transform: scale(0.7); }
+  8%, 100% { opacity: 0; transform: scale(2.2); }
+}
+@keyframes mlogo-glint-loop {
+  0% { opacity: 1; background-position: -30% 0; }
+  11% { opacity: 1; background-position: 130% 0; }
+  11.1%, 100% { opacity: 0; background-position: 130% 0; }
+}
+
+/* Hold the header animation while the intro is on screen, so it plays when the site appears. */
+html.intro-pending .mlogo-header *,
+html.intro-pending .mlogo-header *::before { animation-play-state: paused !important; }
+
+/* ---------- intro: once ---------- */
+.mlogo-intro { --t0: 0.45s; }
+.mlogo-intro .mlogo-run-arc { animation: mlogo-arc-once 1.3s linear calc(var(--t0) + var(--at)) forwards; }
+.mlogo-intro .mlogo-run-line { animation: mlogo-line-once 0.4s linear calc(var(--t0) + var(--at)) forwards; }
+.mlogo-intro .mlogo-node { animation: mlogo-node-once 0.6s ease-out calc(var(--t0) + var(--at)) forwards; }
+.mlogo-intro .mlogo-ring { animation: mlogo-ring-once 0.8s ease-out calc(var(--t0) + var(--at)) forwards; }
+.mlogo-intro .mlogo-spark { animation: mlogo-spark 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) calc(var(--t0) + var(--at)) forwards; }
+.mlogo-intro .mlogo-ember { animation: mlogo-ember 2.2s ease-in-out calc(var(--t0) + var(--at)) forwards; }
+.mlogo-intro .mlogo-fill { animation: mlogo-fill 0.95s linear 1.1s forwards; }
+.mlogo-intro .mlogo-edge { animation: mlogo-edge 0.95s linear 1.1s forwards; }
+.mlogo-intro .mlogo-glint { animation: mlogo-glint-once 0.9s ease-in-out 2.05s forwards; }
+
+@keyframes mlogo-arc-once {
+  0% { opacity: 1; stroke-dashoffset: 0.2; }
+  99% { opacity: 1; }
+  100% { opacity: 0; stroke-dashoffset: -1.05; }
+}
+@keyframes mlogo-line-once {
+  0% { opacity: 1; stroke-dashoffset: 0.6; }
+  98% { opacity: 1; }
+  100% { opacity: 0; stroke-dashoffset: -1.05; }
+}
+@keyframes mlogo-node-once {
+  0% { opacity: 0; transform: scale(0.4); }
+  25% { opacity: 1; transform: scale(1.25); }
+  100% { opacity: 0; transform: scale(0.9); }
+}
+@keyframes mlogo-ring-once {
+  0% { opacity: 0.95; transform: scale(0.7); }
+  100% { opacity: 0; transform: scale(2.4); }
+}
+@keyframes mlogo-spark {
+  0% { opacity: 1; transform: translate(0, 0) scale(1); }
+  100% { opacity: 0; transform: translate(calc(var(--dx) * 1px), calc(var(--dy) * 1px)) scale(0.3); }
+}
+@keyframes mlogo-ember {
+  0% { opacity: 0; transform: translate(0, 12px); }
+  35% { opacity: 0.9; }
+  100% { opacity: 0; transform: translate(calc(var(--dx) * 1px), calc(var(--dy) * 1px)); }
+}
+@keyframes mlogo-fill {
+  0% { opacity: 1; clip-path: inset(0 66% 0 0); }
+  100% { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+/* edge rides the fill's leading edge: position p = (x - 6%) / 88% */
+@keyframes mlogo-edge {
+  0% { opacity: 0; background-position: 31.8% 0; }
+  10% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { opacity: 0; background-position: 106.8% 0; }
+}
+@keyframes mlogo-glint-once {
+  0% { opacity: 1; background-position: -30% 0; }
+  99% { opacity: 1; }
+  100% { opacity: 0; background-position: 130% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mlogo *, .mlogo *::before { animation: none !important; }
+}

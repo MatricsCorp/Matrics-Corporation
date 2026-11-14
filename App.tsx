@@ -1,7 +1,8 @@
 
-import React, { Suspense, useState, useEffect, lazy } from 'react';
+import React, { Suspense, useState, useEffect, useCallback, lazy } from 'react';
 import UI from './components/UI';
 import SceneBoundary from './components/SceneBoundary';
+import IntroReveal, { shouldShowIntro } from './components/IntroReveal';
 import { trackPointer } from './lib/pointer';
 
 // The 3D globe (three.js, ~1 MB of code) loads in its own file after the page
@@ -37,6 +38,12 @@ const getInitialView = (): AppView => {
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<AppView>(getInitialView);
   const [theme, setTheme] = useState<AppTheme>('orange');
+  // First-visit logo reveal (see components/IntroReveal.tsx).
+  const [showIntro, setShowIntro] = useState(shouldShowIntro);
+  const endIntro = useCallback(() => setShowIntro(false), []);
+  useEffect(() => {
+    if (!showIntro) document.documentElement.classList.remove('intro-pending');
+  }, [showIntro]);
 
   // Sync route with browser history
   const handleViewChange = (newView: AppView) => {
@@ -113,6 +120,8 @@ const App: React.FC = () => {
         theme={theme}
         setTheme={setTheme}
       />
+
+      {showIntro && <IntroReveal onDone={endIntro} />}
     </div>
   );
 };
