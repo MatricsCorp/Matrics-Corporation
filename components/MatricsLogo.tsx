@@ -7,7 +7,7 @@ import './matrics-logo.css';
 type Variant = 'header' | 'intro';
 
 interface MatricsLogoProps {
-  /** header: plays once on load, then a soft light runs every few seconds. intro: the full reveal, once. */
+  /** header: plays once on load, then a soft light runs every few seconds. intro: the floating first-visit reveal. */
   variant: Variant;
   /** Sits on a light background (Light theme): dark lettering, orange light. */
   onLight?: boolean;
@@ -18,7 +18,6 @@ const SRC: Record<Variant, { base: string; baseOnLight?: string; w: number; h: n
   header: { base: '/brand/matrics-grid-sm.webp', baseOnLight: '/brand/matrics-grid-sm-dark.webp', w: 538, h: 132 },
   intro: { base: '/brand/matrics-grid.webp', w: 1630, h: 400 },
 };
-const LETTERS = '/brand/matrics-grid-letters.webp';
 
 const maskStyle = (url: string): React.CSSProperties => ({
   WebkitMaskImage: `url(${url})`,
@@ -40,14 +39,6 @@ const MatricsLogo: React.FC<MatricsLogoProps> = ({ variant, onLight = false, cla
       className={`mlogo mlogo-${variant} ${onLight ? 'mlogo-on-light' : ''} ${className}`}
     >
       <img src={base} alt="" width={src.w} height={src.h} draggable={false} className="mlogo-base" />
-
-      {intro && (
-        <>
-          {/* Letters fill with orange from left to right, led by a bright edge */}
-          <span aria-hidden="true" className="mlogo-layer mlogo-mask mlogo-fill" style={maskStyle(LETTERS)} />
-          <span aria-hidden="true" className="mlogo-layer mlogo-mask mlogo-edge" style={maskStyle(LETTERS)} />
-        </>
-      )}
 
       {/* Sheen that sweeps across the logo */}
       <span aria-hidden="true" className="mlogo-layer mlogo-mask mlogo-glint" style={maskStyle(base)} />

@@ -500,7 +500,7 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
       {/* ========================================================================= */}
       {/* MAIN CONTENT CONTAINER */}
       {/* ========================================================================= */}
-      <main className="relative flex-1 flex flex-col">
+      <main className="intro-content relative flex-1 flex flex-col">
         
         {/* ======================================================================= */}
         {/* VIEW 1: LANDING HERO + HOW IT WORKS */}

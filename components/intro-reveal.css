@@ -1,71 +1,63 @@
-/* First-visit logo reveal: a dark stage with a faint grid, the logo lights up,
-   then the stage fades to show the site. */
-.intro {
+/* First-visit floating logo: appears over the site (no dark screen), lights
+   up, then glides into the header. Clicks pass straight through. While it
+   floats, the page text waits so the logo isn't drawn over the headline; the
+   text fades in as the logo lands. */
+.intro-content { transition: opacity 0.6s ease; }
+html.intro-pending .intro-content { opacity: 0; }
+.intro-float {
+  --intro-w: min(72vw, 640px);
   position: fixed;
   inset: 0;
   z-index: 1000;
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-  cursor: pointer;
-  background: radial-gradient(ellipse at 50% 46%, #1c1610 0%, #0d0f10 55%, #060707 100%);
+  pointer-events: none;
 }
-.intro::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-  background-size: 56px 56px;
-  -webkit-mask-image: radial-gradient(ellipse at 50% 50%, #000 25%, transparent 72%);
-  mask-image: radial-gradient(ellipse at 50% 50%, #000 25%, transparent 72%);
-}
-.intro-glow {
-  position: absolute;
-  width: min(110vw, 1100px);
-  aspect-ratio: 2.4;
-  border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(255, 122, 0, 0.32) 0%, rgba(255, 122, 0, 0.08) 45%, transparent 70%);
-  opacity: 0;
-  animation: intro-glow 1.4s ease-out 1.1s both;
-}
-.intro-logo {
-  position: relative;
-  width: min(84vw, 880px);
-  animation: intro-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
-}
-.intro-skip {
-  position: absolute;
-  right: max(20px, env(safe-area-inset-right));
-  bottom: max(20px, env(safe-area-inset-bottom));
-  padding: 8px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.6);
-  font: 600 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
-  letter-spacing: 0.25em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-.intro-skip:hover { color: #fff; border-color: rgba(255, 255, 255, 0.4); }
 
-.intro-leaving { animation: intro-out 0.5s ease-in both; pointer-events: none; }
-.intro-leaving .intro-logo { animation: intro-zoom 0.5s ease-in both; }
+/* Soft shadow pool behind the logo so it reads on the bright page */
+.intro-shade {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: min(130vw, 1000px);
+  aspect-ratio: 2.6;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(48, 14, 0, 0.42) 0%, rgba(48, 14, 0, 0.18) 42%, rgba(48, 14, 0, 0) 70%);
+  animation: intro-shade-in 0.6s ease-out backwards; /* backwards: lets the fade-out below take over */
+  transition: opacity 0.45s ease;
+}
+.is-fly .intro-shade,
+.is-landed .intro-shade { opacity: 0; }
+
+.intro-fly {
+  position: absolute;
+  width: var(--intro-w);
+  left: calc(50% - var(--intro-w) / 2);
+  top: calc(45% - var(--intro-w) / 8.15); /* logo is 4.075 : 1 */
+  transform-origin: 0 0;
+  will-change: transform;
+}
+.intro-bob {
+  animation:
+    intro-in 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both,
+    intro-bob 2.6s ease-in-out 0.6s infinite;
+}
+.intro-logo { width: 100%; }
+.intro-logo .mlogo-base { filter: drop-shadow(0 10px 28px rgba(60, 16, 0, 0.5)); }
+
+/* Freeze the bob while gliding so the logo lands exactly on the header one */
+.is-fly .intro-bob,
+.is-landed .intro-bob { animation-play-state: paused; }
+.is-landed .intro-fly { opacity: 0; transition: opacity 0.3s ease; }
 
 @keyframes intro-in {
-  from { opacity: 0; transform: scale(0.94); filter: blur(8px); }
+  from { opacity: 0; transform: scale(0.92); filter: blur(8px); }
   to { opacity: 1; transform: none; filter: none; }
 }
-@keyframes intro-glow {
-  from { opacity: 0; transform: scale(0.8); }
-  to { opacity: 1; transform: none; }
+@keyframes intro-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
 }
-@keyframes intro-out {
-  to { opacity: 0; visibility: hidden; }
-}
-@keyframes intro-zoom {
-  from { transform: none; }
-  to { transform: scale(1.06); }
+@keyframes intro-shade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
