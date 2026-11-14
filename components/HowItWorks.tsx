@@ -119,10 +119,13 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
   const softText = isLight ? 'text-slate-500' : isOrange ? 'text-white/85' : 'text-white/60';
   const faintText = isLight ? 'text-slate-400' : isOrange ? 'text-white/70' : 'text-white/40';
   const bodyText = isLight ? 'text-slate-600' : isOrange ? 'text-white/90' : 'text-white/70';
-  const flowColours = (isOrange
-    ? { '--hiw-accent': '#ffffff', '--hiw-glow': 'rgba(255, 244, 230, 0.9)', '--hiw-fill': '#ffffff', '--hiw-on': '#db5319', '--hiw-rest': '#ffffff', '--hiw-rest-bg': 'rgba(255, 255, 255, 0.08)' }
-    : { '--hiw-accent': '#db5319', '--hiw-glow': 'rgba(219, 83, 25, 0.75)', '--hiw-fill': '#db5319', '--hiw-on': '#ffffff', '--hiw-rest': '#db5319', '--hiw-rest-bg': 'rgba(219, 83, 25, 0.1)' }
-  ) as React.CSSProperties;
+  const flowColours = {
+    ...(isOrange
+      ? { '--hiw-accent': '#ffffff', '--hiw-glow': 'rgba(255, 244, 230, 0.9)', '--hiw-fill': '#ffffff', '--hiw-on': '#db5319', '--hiw-rest': '#ffffff', '--hiw-rest-bg': 'rgba(255, 255, 255, 0.08)' }
+      : { '--hiw-accent': '#db5319', '--hiw-glow': 'rgba(219, 83, 25, 0.75)', '--hiw-fill': '#db5319', '--hiw-on': '#ffffff', '--hiw-rest': '#db5319', '--hiw-rest-bg': 'rgba(219, 83, 25, 0.1)' }),
+    // Reading shade behind the diagram: a faint dark tint on orange/dark, a faint white one on light.
+    '--hiw-shade': isLight ? 'rgba(255, 255, 255, 0.5)' : isOrange ? 'rgba(70, 20, 0, 0.2)' : 'rgba(0, 0, 0, 0.3)',
+  } as React.CSSProperties;
 
   const steps = [
     {
@@ -175,7 +178,9 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
         {/* ========================================================================= */}
         {/* INTERACTIVE DIAGRAM — drawn straight on the page background (no panels)  */}
         {/* ========================================================================= */}
-        <div ref={diagramRef} className="relative space-y-8" style={flowColours}>
+        <div ref={diagramRef} className="relative isolate space-y-8" style={flowColours}>
+          {/* Trial: near-transparent shade with soft edges so the text reads more clearly over the globe */}
+          <span aria-hidden className="hiw-shade pointer-events-none absolute -inset-x-3 sm:-inset-x-8 -inset-y-8 -z-10" />
 
           {/* Top Row: The Core Trade Chain */}
           <div>

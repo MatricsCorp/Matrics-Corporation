@@ -24,6 +24,23 @@
   animation-delay: var(--hiw-delay, 0s);
 }
 
+/* Trial reading shade behind the diagram: near-transparent tint plus a
+   slight blur of the globe behind it, faded out at every edge so no box
+   outline shows. */
+.hiw-shade {
+  background: var(--hiw-shade);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, #000 7%, #000 93%, transparent),
+    linear-gradient(to bottom, transparent, #000 6%, #000 94%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent, #000 7%, #000 93%, transparent),
+    linear-gradient(to bottom, transparent, #000 6%, #000 94%, transparent);
+  mask-composite: intersect;
+}
+
 /* Paused while the diagram is off screen. */
 .hiw-paused .hiw-anim {
   animation-play-state: paused;
