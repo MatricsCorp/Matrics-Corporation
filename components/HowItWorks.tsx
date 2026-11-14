@@ -66,6 +66,52 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
     { name: 'Reconciled', step: '06', desc: 'Dual ledger balanced' },
   ];
 
+  // Bottom feeds; `lit` = when they light up (during Dispatch/Delivery and Payment/Reconciled)
+  const feeds = [
+    {
+      icon: Truck,
+      title: 'Transporters & Logistics Providers',
+      sub: 'Regional fleets, tempo drivers, and dispatch hubs',
+      points: [
+        'Dispatch manifest & corridor custody logging',
+        'Tamper-proof electronic Proof of Delivery (e-POD)',
+        'Route milestone telemetry & dynamic transit alerts',
+      ],
+      feeds: 'Feeds Dispatch & Delivery Milestones',
+      lit: EVENT_START + 2 * EVENT_STEP,
+    },
+    {
+      icon: Landmark,
+      title: 'Banks & Payment Partners',
+      sub: 'UPI switches, NBFC lenders, and settlement escrows',
+      points: [
+        'Instant UPI / BBPS merchant settlement rails',
+        'In-flow working capital lines underwritten by order velocity',
+        'Automated dual-party ledger balancing upon receipt',
+      ],
+      feeds: 'Feeds Payment & Reconciliation Rails',
+      lit: EVENT_START + 4 * EVENT_STEP,
+    },
+  ];
+
+  // Colours for the open (panel-free) diagram. On the orange theme the
+  // accents switch to white, as in the hero, because #db5319 would vanish
+  // against the orange page; light and dark themes keep the orange accent.
+  const accentText = isOrange ? 'text-white' : 'text-[#db5319]';
+  const accentBg = isOrange ? 'bg-white' : 'bg-[#db5319]';
+  const ringColour = isOrange ? 'border-white/50' : 'border-[#db5319]/50';
+  const lineColour = isOrange ? 'bg-white/35' : 'bg-[#db5319]/35';
+  const dividerColour = isLight ? 'border-slate-300/70' : isOrange ? 'border-white/25' : 'border-white/10';
+  const bandBorder = isLight ? 'border-[#db5319]/40' : isOrange ? 'border-white/45' : 'border-[#db5319]/60';
+  const strongText = isLight ? 'text-slate-900' : 'text-white';
+  const softText = isLight ? 'text-slate-500' : isOrange ? 'text-white/85' : 'text-white/60';
+  const faintText = isLight ? 'text-slate-400' : isOrange ? 'text-white/70' : 'text-white/40';
+  const bodyText = isLight ? 'text-slate-600' : isOrange ? 'text-white/90' : 'text-white/70';
+  const flowColours = (isOrange
+    ? { '--hiw-accent': '#ffffff', '--hiw-glow': 'rgba(255, 244, 230, 0.9)', '--hiw-fill': '#ffffff', '--hiw-on': '#db5319', '--hiw-rest': '#ffffff', '--hiw-rest-bg': 'rgba(255, 255, 255, 0.08)' }
+    : { '--hiw-accent': '#db5319', '--hiw-glow': 'rgba(219, 83, 25, 0.75)', '--hiw-fill': '#db5319', '--hiw-on': '#ffffff', '--hiw-rest': '#db5319', '--hiw-rest-bg': 'rgba(219, 83, 25, 0.1)' }
+  ) as React.CSSProperties;
+
   const steps = [
     {
       num: '01',
@@ -115,242 +161,162 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
         </div>
 
         {/* ========================================================================= */}
-        {/* INTERACTIVE DIAGRAM */}
+        {/* INTERACTIVE DIAGRAM — drawn straight on the page background (no panels)  */}
         {/* ========================================================================= */}
-        <div ref={diagramRef} className={`p-6 sm:p-10 rounded-2xl border transition-all duration-300 shadow-2xl relative overflow-hidden ${
-          isLight
-            ? 'bg-white/95 border-slate-200/90 shadow-slate-200/60'
-            : isOrange
-              ? 'bg-stone-950/80 backdrop-blur-xl border-white/15 shadow-2xl text-white'
-              : 'bg-zinc-950/80 backdrop-blur-xl border-white/10 text-white'
-        }`}>
-          {/* Subtle grid backdrop */}
-          <div 
-            className="absolute inset-0 pointer-events-none opacity-[0.03]" 
-            style={{ backgroundImage: 'radial-gradient(#db5319 1px, transparent 1px)', backgroundSize: '20px 20px' }}
-          />
+        <div ref={diagramRef} className="relative space-y-8" style={flowColours}>
 
-          <div className="relative z-10 space-y-8">
-            
-            {/* Top Row: The Core Trade Chain */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-[9px] font-mono uppercase tracking-[0.25em] text-[#db5319] font-bold">
-                  Top Stream · Physical & Commercial Participants
-                </div>
-                <div className={`text-[9px] font-mono ${isLight ? 'text-slate-400' : 'text-white/40'}`}>
-                  Each Participant Writes Into The Central Ledger ↓
-                </div>
+          {/* Top Row: The Core Trade Chain */}
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <div className={`text-[9px] font-mono uppercase tracking-[0.25em] font-bold ${accentText}`}>
+                Top Stream · Physical & Commercial Participants
               </div>
+              <div className={`text-[9px] font-mono ${faintText}`}>
+                Each Participant Writes Into The Central Ledger ↓
+              </div>
+            </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-                {participants.map((p, idx) => (
-                  <div 
-                    key={idx}
-                    className={`relative p-4 rounded-xl border flex flex-col justify-between transition-all group ${
-                      isLight 
-                        ? 'bg-slate-50/80 border-slate-200/80 hover:bg-white hover:border-[#db5319]/40' 
-                        : 'bg-white/[0.03] border-white/10 hover:bg-white/[0.06] hover:border-[#db5319]/50'
-                    }`}
-                  >
-                    {/* Flow animation: card glow, light along the top edge, arrow to the next card, drop into the band */}
-                    <span aria-hidden className="hiw-anim hiw-glow pointer-events-none absolute inset-0 rounded-xl" style={at(idx * NODE_STEP)} />
-                    <span aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-xl">
-                      <span className="hiw-anim hiw-sweep absolute top-0 left-0 h-[2px] w-1/2" style={at(idx * NODE_STEP)} />
-                    </span>
-                    {idx < participants.length - 1 && (
-                      <span aria-hidden className="hiw-anim hiw-chevron pointer-events-none absolute top-[26px] -right-[14px] hidden md:block text-[#db5319]" style={at(idx * NODE_STEP)}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-8 sm:gap-x-4">
+              {participants.map((p, idx) => (
+                <div key={idx} className="relative flex flex-col items-center text-center px-1">
+                  {/* Light line + arrow to the next participant */}
+                  {idx < participants.length - 1 && (
+                    <span aria-hidden className="pointer-events-none absolute top-7 left-[calc(50%+36px)] w-[calc(100%-56px)] h-px hidden md:block">
+                      <span className={`absolute inset-0 ${lineColour}`} />
+                      <span className="absolute -inset-y-px inset-x-0 overflow-hidden">
+                        <span className="hiw-anim hiw-sweep absolute inset-y-0 left-0 w-1/2 rounded-full" style={at(idx * NODE_STEP)} />
+                      </span>
+                      <span className={`hiw-anim hiw-chevron absolute -right-2 -top-[6px] ${accentText}`} style={at(idx * NODE_STEP)}>
                         <ChevronRight size={12} strokeWidth={3} />
                       </span>
-                    )}
-                    <span aria-hidden className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 w-[2px] h-8 overflow-hidden hidden md:block">
-                      <span className="hiw-anim hiw-drop block w-full h-3 rounded-full" style={at(idx * NODE_STEP + 0.2)} />
                     </span>
+                  )}
 
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="hiw-anim hiw-icon p-2 rounded-lg bg-[#db5319]/10 text-[#db5319]" style={at(idx * NODE_STEP)}>
-                        <p.icon size={16} />
-                      </div>
-                      <span className="text-[9px] font-mono text-[#db5319] font-bold">0{idx + 1}</span>
-                    </div>
-                    <div>
-                      <div className={`text-xs sm:text-sm font-black uppercase tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                        {p.label}
-                      </div>
-                      <div className={`text-[10px] font-medium mt-0.5 ${isLight ? 'text-slate-500' : 'text-white/60'}`}>
-                        {p.sub}
-                      </div>
-                      <div className={`text-[10px] mt-1.5 leading-snug hidden sm:block ${isLight ? 'text-slate-400' : 'text-white/40'}`}>
-                        {p.desc}
-                      </div>
-                    </div>
-
-                    <div className="hiw-anim hiw-arrow mt-3 pt-2 border-t border-dashed border-white/10 flex items-center justify-center text-[#db5319]" style={at(idx * NODE_STEP)}>
-                      <ArrowDown size={12} className="animate-bounce" />
-                    </div>
+                  {/* Symbol */}
+                  <div className={`hiw-anim hiw-icon w-14 h-14 rounded-full border flex items-center justify-center ${ringColour}`} style={at(idx * NODE_STEP)}>
+                    <p.icon size={22} />
                   </div>
-                ))}
-              </div>
-            </div>
 
-            {/* Central Band: The Matrics Transaction Layer */}
-            <div className={`relative p-5 sm:p-7 rounded-xl border-2 transition-all ${
-              isLight
-                ? 'bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 border-[#db5319]/30 text-slate-900 shadow-inner'
-                : 'bg-gradient-to-r from-[#db5319]/15 via-[#db5319]/25 to-[#db5319]/15 border-[#db5319]/60 text-white shadow-[0_0_40px_rgba(219,83,25,0.15)]'
-            }`}>
-              {/* Flow animation: where each participant's light lands, and the closing ledger pulse */}
-              <span aria-hidden className="pointer-events-none absolute -inset-x-[2px] -top-[2px] hidden md:grid grid-cols-4 gap-4">
-                {participants.map((_, i) => (
-                  <span key={i} className="hiw-anim hiw-seg h-[2px] rounded-full" style={at(i * NODE_STEP + 1.0)} />
-                ))}
-              </span>
-              <span aria-hidden className="hiw-anim hiw-band pointer-events-none absolute -inset-[2px] rounded-xl" style={at(EVENT_START + 6 * EVENT_STEP)} />
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-[#db5319]/30">
-                <div className="flex items-center space-x-2.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#db5319] animate-ping" />
-                  <span className="text-xs sm:text-sm font-black uppercase tracking-wider">
-                    Matrics Transaction Layer
-                  </span>
-                  <span className={`text-[10px] px-2 py-0.5 rounded font-mono ${
-                    isLight ? 'bg-white text-slate-700' : 'bg-black/40 text-amber-200'
-                  }`}>
-                    UNIFIED COMMERCIAL BAND
+                  <span className={`mt-3 text-[9px] font-mono font-bold ${accentText}`}>0{idx + 1}</span>
+                  <div className={`text-xs sm:text-sm font-black uppercase tracking-tight ${strongText}`}>
+                    {p.label}
+                  </div>
+                  <div className={`text-[10px] font-medium mt-0.5 ${softText}`}>
+                    {p.sub}
+                  </div>
+                  <div className={`text-[10px] mt-1.5 leading-snug hidden sm:block ${faintText}`}>
+                    {p.desc}
+                  </div>
+
+                  <div className={`hiw-anim hiw-arrow mt-3 flex items-center justify-center ${accentText}`} style={at(idx * NODE_STEP)}>
+                    <ArrowDown size={12} className="animate-bounce" />
+                  </div>
+
+                  {/* Light dropping into the transaction layer */}
+                  <span aria-hidden className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 w-[2px] h-8 overflow-hidden hidden md:block">
+                    <span className="hiw-anim hiw-drop block w-full h-3 rounded-full" style={at(idx * NODE_STEP + 0.2)} />
                   </span>
                 </div>
-                <div className="text-[10px] font-mono font-semibold text-[#db5319]">
-                  SYNCHRONIZED EVENT LINEAGE
-                </div>
-              </div>
-
-              {/* Event Chain */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
-                {transactionEvents.map((ev, i) => (
-                  <div 
-                    key={i}
-                    className={`relative p-3 rounded-lg border text-center transition-all ${
-                      isLight
-                        ? 'bg-white/95 border-orange-200/80 shadow-sm'
-                        : 'bg-black/50 border-white/10 hover:border-[#db5319]'
-                    }`}
-                  >
-                    <span aria-hidden className="hiw-anim hiw-glow-fast pointer-events-none absolute inset-0 rounded-lg" style={at(EVENT_START + i * EVENT_STEP)} />
-                    <span aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-lg">
-                      <span className="hiw-anim hiw-sweep-fast absolute top-0 left-0 h-[2px] w-1/2" style={at(EVENT_START + i * EVENT_STEP)} />
-                    </span>
-                    <div className="text-[9px] font-mono text-[#db5319] font-bold">
-                      STEP {ev.step}
-                    </div>
-                    <div className={`text-xs font-black uppercase tracking-tight mt-0.5 ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                      {ev.name}
-                    </div>
-                    <div className={`text-[9px] mt-1 ${isLight ? 'text-slate-500' : 'text-white/60'}`}>
-                      {ev.desc}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              ))}
             </div>
-
-            {/* Bottom Row: Transporters + Banks and Payment Partners Feeding from Below */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <div className="text-[9px] font-mono uppercase tracking-[0.25em] text-[#db5319] font-bold">
-                  Bottom Feed · Logistics & Financial Rail Inputs
-                </div>
-                <div className={`text-[9px] font-mono ${isLight ? 'text-slate-400' : 'text-white/40'}`}>
-                  Feeding The Band From Below ↑
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Transporters & Logistics */}
-                <div className={`relative p-4 sm:p-5 rounded-xl border flex flex-col justify-between ${
-                  isLight 
-                    ? 'bg-slate-50/80 border-slate-200/80' 
-                    : 'bg-white/[0.03] border-white/10'
-                }`}>
-                  <span aria-hidden className="hiw-anim hiw-glow pointer-events-none absolute inset-0 rounded-xl" style={at(EVENT_START + 2 * EVENT_STEP)} />
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className="p-2.5 rounded-lg bg-[#db5319]/10 text-[#db5319]">
-                      <Truck size={18} />
-                    </div>
-                    <div>
-                      <div className={`text-sm font-black uppercase tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                        Transporters & Logistics Providers
-                      </div>
-                      <div className={`text-[10px] ${isLight ? 'text-slate-500' : 'text-white/60'}`}>
-                        Regional fleets, tempo drivers, and dispatch hubs
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className={`text-xs space-y-1.5 pt-2 border-t border-white/10 ${isLight ? 'text-slate-600' : 'text-white/70'}`}>
-                    <div className="flex items-center space-x-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#db5319]" />
-                      <span>Dispatch manifest & corridor custody logging</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#db5319]" />
-                      <span>Tamper-proof electronic Proof of Delivery (e-POD)</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#db5319]" />
-                      <span>Route milestone telemetry & dynamic transit alerts</span>
-                    </div>
-                  </div>
-
-                  <div className="hiw-anim hiw-arrow mt-3 pt-2 flex items-center justify-center text-[#db5319]" style={at(EVENT_START + 2 * EVENT_STEP)}>
-                    <ArrowUp size={12} className="animate-bounce" />
-                    <span className="text-[9px] font-mono font-bold ml-1 uppercase">Feeds Dispatch & Delivery Milestones</span>
-                  </div>
-                </div>
-
-                {/* Banks & Payment Partners */}
-                <div className={`relative p-4 sm:p-5 rounded-xl border flex flex-col justify-between ${
-                  isLight 
-                    ? 'bg-slate-50/80 border-slate-200/80' 
-                    : 'bg-white/[0.03] border-white/10'
-                }`}>
-                  <span aria-hidden className="hiw-anim hiw-glow pointer-events-none absolute inset-0 rounded-xl" style={at(EVENT_START + 4 * EVENT_STEP)} />
-                  <div className="flex items-center space-x-3 mb-3">
-                    <div className="p-2.5 rounded-lg bg-[#db5319]/10 text-[#db5319]">
-                      <Landmark size={18} />
-                    </div>
-                    <div>
-                      <div className={`text-sm font-black uppercase tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                        Banks & Payment Partners
-                      </div>
-                      <div className={`text-[10px] ${isLight ? 'text-slate-500' : 'text-white/60'}`}>
-                        UPI switches, NBFC lenders, and settlement escrows
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className={`text-xs space-y-1.5 pt-2 border-t border-white/10 ${isLight ? 'text-slate-600' : 'text-white/70'}`}>
-                    <div className="flex items-center space-x-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#db5319]" />
-                      <span>Instant UPI / BBPS merchant settlement rails</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#db5319]" />
-                      <span>In-flow working capital lines underwritten by order velocity</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#db5319]" />
-                      <span>Automated dual-party ledger balancing upon receipt</span>
-                    </div>
-                  </div>
-
-                  <div className="hiw-anim hiw-arrow mt-3 pt-2 flex items-center justify-center text-[#db5319]" style={at(EVENT_START + 4 * EVENT_STEP)}>
-                    <ArrowUp size={12} className="animate-bounce" />
-                    <span className="text-[9px] font-mono font-bold ml-1 uppercase">Feeds Payment & Reconciliation Rails</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
           </div>
+
+          {/* Central Band: The Matrics Transaction Layer (outline only) */}
+          <div className={`relative p-5 sm:p-7 rounded-xl border transition-all ${bandBorder} ${strongText}`}>
+            {/* Where each participant's light lands, and the closing ledger pulse */}
+            <span aria-hidden className="pointer-events-none absolute -inset-x-px -top-px hidden md:grid grid-cols-4 gap-4">
+              {participants.map((_, i) => (
+                <span key={i} className="hiw-anim hiw-seg h-[2px] rounded-full" style={at(i * NODE_STEP + 1.0)} />
+              ))}
+            </span>
+            <span aria-hidden className="hiw-anim hiw-band pointer-events-none absolute -inset-px rounded-xl" style={at(EVENT_START + 6 * EVENT_STEP)} />
+
+            <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b ${dividerColour}`}>
+              <div className="flex items-center space-x-2.5">
+                <div className={`w-2.5 h-2.5 rounded-full animate-ping ${accentBg}`} />
+                <span className="text-xs sm:text-sm font-black uppercase tracking-wider">
+                  Matrics Transaction Layer
+                </span>
+                <span className={`text-[10px] px-2 py-0.5 rounded font-mono ${
+                  isLight ? 'bg-white text-slate-700' : 'bg-black/40 text-amber-200'
+                }`}>
+                  UNIFIED COMMERCIAL BAND
+                </span>
+              </div>
+              <div className={`text-[10px] font-mono font-semibold ${accentText}`}>
+                SYNCHRONIZED EVENT LINEAGE
+              </div>
+            </div>
+
+            {/* Event Chain */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
+              {transactionEvents.map((ev, i) => (
+                <div key={i} className="relative px-2 pt-2 pb-3 text-center">
+                  <div className={`text-[9px] font-mono font-bold ${accentText}`}>
+                    STEP {ev.step}
+                  </div>
+                  <div className={`hiw-anim hiw-text text-xs font-black uppercase tracking-tight mt-0.5 ${strongText}`} style={at(EVENT_START + i * EVENT_STEP)}>
+                    {ev.name}
+                  </div>
+                  <div className={`text-[9px] mt-1 ${softText}`}>
+                    {ev.desc}
+                  </div>
+                  {/* Underline the light runs along */}
+                  <span aria-hidden className={`pointer-events-none absolute bottom-0 left-2 right-2 h-px ${lineColour}`} />
+                  <span aria-hidden className="pointer-events-none absolute -bottom-px left-2 right-2 h-[3px] overflow-hidden">
+                    <span className="hiw-anim hiw-sweep-fast absolute inset-y-0 left-0 w-1/2 rounded-full" style={at(EVENT_START + i * EVENT_STEP)} />
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Bottom Row: Transporters + Banks and Payment Partners Feeding from Below */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div className={`text-[9px] font-mono uppercase tracking-[0.25em] font-bold ${accentText}`}>
+                Bottom Feed · Logistics & Financial Rail Inputs
+              </div>
+              <div className={`text-[9px] font-mono ${faintText}`}>
+                Feeding The Band From Below ↑
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 sm:gap-10">
+              {feeds.map((f, i) => (
+                <div key={i} className="flex flex-col justify-between">
+                  <div className="flex items-center space-x-3 mb-3">
+                    <div className={`hiw-anim hiw-icon w-11 h-11 shrink-0 rounded-full border flex items-center justify-center ${ringColour}`} style={at(f.lit)}>
+                      <f.icon size={18} />
+                    </div>
+                    <div>
+                      <div className={`text-sm font-black uppercase tracking-tight ${strongText}`}>
+                        {f.title}
+                      </div>
+                      <div className={`text-[10px] ${softText}`}>
+                        {f.sub}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={`text-xs space-y-1.5 pt-2 border-t ${dividerColour} ${bodyText}`}>
+                    {f.points.map((pt) => (
+                      <div key={pt} className="flex items-center space-x-2">
+                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${accentBg}`} />
+                        <span>{pt}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className={`hiw-anim hiw-arrow mt-3 pt-2 flex items-center justify-center ${accentText}`} style={at(f.lit)}>
+                    <ArrowUp size={12} className="animate-bounce" />
+                    <span className="text-[9px] font-mono font-bold ml-1 uppercase">{f.feeds}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
 
         {/* ========================================================================= */}
