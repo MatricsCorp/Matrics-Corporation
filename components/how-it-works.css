@@ -1,0 +1,281 @@
+/*
+ * "How Matrics Works" — flow animation for the open (panel-free) diagram.
+ *
+ * Every animated piece shares one 10-second loop and is placed in it with
+ * --hiw-delay, so the sequence stays in step:
+ *   0.0–5.8 s  Manufacturer → Wholesaler → Kirana Store → Consumer light up in
+ *              turn; each light runs to the next symbol, drops onto the rail,
+ *              runs to the centre and down into the ledger, which flickers.
+ *   5.8–8.8 s  The six ledger steps (Order … Reconciled) light up along the
+ *              timeline; Transporters light during Dispatch/Delivery, Banks
+ *              during Payment/Reconciled.
+ *   8.8–10 s   The ledger fills and sends out a ring (synchronised); repeat.
+ *
+ * Colours come from the diagram's --hiw-* variables (white on the orange
+ * theme, #db5319 on light/dark). Only opacity, transform, colour and small
+ * shadows change. With reduced motion everything stays in its resting look.
+ */
+
+.hiw-anim {
+  animation-duration: 10s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+  animation-fill-mode: both;
+  animation-delay: var(--hiw-delay, 0s);
+}
+
+/* Paused while the diagram is off screen. */
+.hiw-paused .hiw-anim {
+  animation-play-state: paused;
+}
+
+/* Symbol in its ring: lit = filled with the accent, symbol in contrast. */
+.hiw-icon {
+  color: var(--hiw-rest);
+  background-color: var(--hiw-rest-bg);
+  animation-name: hiw-icon;
+}
+
+/* Light running along a line. */
+.hiw-sweep,
+.hiw-sweep-fast {
+  opacity: 0;
+  background: linear-gradient(90deg, transparent, var(--hiw-accent) 55%, transparent);
+  box-shadow: 0 0 8px var(--hiw-glow);
+  transform: translateX(-100%);
+}
+.hiw-sweep { animation-name: hiw-sweep; }
+.hiw-sweep-fast { animation-name: hiw-sweep-short; }
+
+/* Arrow head at the end of each line: faint at rest, lights as the flow passes. */
+.hiw-chevron {
+  opacity: 0.45;
+  animation-name: hiw-chevron;
+}
+
+/* Light dropping from a symbol into the transaction band. */
+.hiw-drop {
+  opacity: 0;
+  background: linear-gradient(180deg, transparent, var(--hiw-accent));
+  box-shadow: 0 0 8px var(--hiw-glow);
+  transform: translateY(-100%);
+  animation-name: hiw-drop;
+}
+
+/* Where the drop lands on the band's top edge. */
+.hiw-seg {
+  opacity: 0;
+  background: var(--hiw-accent);
+  box-shadow: 0 0 12px 2px var(--hiw-glow);
+  animation-name: hiw-seg;
+}
+
+/* Band step name glows while its step is active. */
+.hiw-text { animation-name: hiw-text; }
+
+/* Down / up arrows glow with their symbol. */
+.hiw-arrow { animation-name: hiw-arrow; }
+
+/* Light running along the rail towards the ledger stem. */
+.hiw-run {
+  opacity: 0;
+  background: linear-gradient(90deg, transparent, var(--hiw-accent) 55%, transparent);
+  box-shadow: 0 0 8px var(--hiw-glow);
+  transform: translateX(-100%);
+  animation-name: hiw-run;
+}
+
+/* Light running down the stem into the ledger. */
+.hiw-stem {
+  opacity: 0;
+  background: linear-gradient(180deg, transparent, var(--hiw-accent));
+  box-shadow: 0 0 8px var(--hiw-glow);
+  transform: translateY(-100%);
+  animation-name: hiw-stem;
+}
+
+/* Ledger ring flickers as each participant's light arrives. */
+.hiw-tick {
+  opacity: 0;
+  border: 2px solid var(--hiw-accent);
+  box-shadow: 0 0 22px 3px var(--hiw-glow);
+  animation-name: hiw-tick;
+}
+
+/* Ring sent out by the ledger when everything is synchronised. */
+.hiw-halo {
+  opacity: 0;
+  border: 2px solid var(--hiw-accent);
+  box-shadow: 0 0 18px var(--hiw-glow);
+  animation-name: hiw-halo;
+}
+
+/* Timeline dot: ring at rest, filled and glowing while its step is active. */
+.hiw-dot {
+  background-color: var(--hiw-rest-bg);
+  animation-name: hiw-dot;
+}
+
+/* Light running down the timeline (phones). */
+.hiw-vsweep-fast {
+  opacity: 0;
+  background: linear-gradient(180deg, transparent, var(--hiw-accent) 55%, transparent);
+  box-shadow: 0 0 8px var(--hiw-glow);
+  transform: translateY(-100%);
+  animation-name: hiw-vsweep-short;
+}
+
+@keyframes hiw-icon {
+  0%, 15.5%, 100% {
+    color: var(--hiw-rest);
+    background-color: var(--hiw-rest-bg);
+    box-shadow: 0 0 0 0 transparent;
+  }
+  3%, 12% {
+    color: var(--hiw-on);
+    background-color: var(--hiw-fill);
+    box-shadow: 0 0 24px 4px var(--hiw-glow);
+  }
+}
+
+@keyframes hiw-sweep {
+  0% { opacity: 0; transform: translateX(-100%); }
+  1% { opacity: 1; }
+  11% { opacity: 1; transform: translateX(200%); }
+  12%, 100% { opacity: 0; transform: translateX(200%); }
+}
+
+@keyframes hiw-sweep-short {
+  0% { opacity: 0; transform: translateX(-100%); }
+  0.5% { opacity: 1; }
+  5.5% { opacity: 1; transform: translateX(200%); }
+  6%, 100% { opacity: 0; transform: translateX(200%); }
+}
+
+@keyframes hiw-chevron {
+  0%, 9% { opacity: 0.45; transform: none; filter: drop-shadow(0 0 0 transparent); }
+  11.5%, 13% { opacity: 1; transform: translateX(3px); filter: drop-shadow(0 0 6px var(--hiw-glow)); }
+  17%, 100% { opacity: 0.45; transform: none; filter: drop-shadow(0 0 0 transparent); }
+}
+
+@keyframes hiw-drop {
+  0% { opacity: 0; transform: translateY(-100%); }
+  4% { opacity: 1; }
+  9% { opacity: 1; transform: translateY(260%); }
+  10%, 100% { opacity: 0; transform: translateY(260%); }
+}
+
+@keyframes hiw-seg {
+  0% { opacity: 0; }
+  2%, 6% { opacity: 1; }
+  10%, 100% { opacity: 0; }
+}
+
+@keyframes hiw-text {
+  0%, 8%, 100% { text-shadow: 0 0 0 transparent; }
+  1.5%, 6% { text-shadow: 0 0 12px var(--hiw-glow), 0 0 2px var(--hiw-glow); }
+}
+
+@keyframes hiw-arrow {
+  0%, 15.5%, 100% { filter: drop-shadow(0 0 0 transparent); }
+  3%, 12% { filter: drop-shadow(0 0 6px var(--hiw-glow)); }
+}
+
+@keyframes hiw-run {
+  0% { opacity: 0; transform: translateX(-100%); }
+  0.5% { opacity: 1; }
+  4.5% { opacity: 1; transform: translateX(200%); }
+  5%, 100% { opacity: 0; transform: translateX(200%); }
+}
+
+@keyframes hiw-stem {
+  0% { opacity: 0; transform: translateY(-100%); }
+  0.5% { opacity: 1; }
+  4% { opacity: 1; transform: translateY(250%); }
+  4.5%, 100% { opacity: 0; transform: translateY(250%); }
+}
+
+@keyframes hiw-tick {
+  0% { opacity: 0; }
+  1.5% { opacity: 1; }
+  4.5%, 100% { opacity: 0; }
+}
+
+@keyframes hiw-halo {
+  0% { opacity: 0; transform: scale(1); }
+  1% { opacity: 0.9; transform: scale(1); }
+  14%, 100% { opacity: 0; transform: scale(1.9); }
+}
+
+@keyframes hiw-dot {
+  0%, 8%, 100% { background-color: var(--hiw-rest-bg); box-shadow: 0 0 0 0 transparent; transform: scale(1); }
+  1.5%, 6% { background-color: var(--hiw-accent); box-shadow: 0 0 12px 2px var(--hiw-glow); transform: scale(1.3); }
+}
+
+@keyframes hiw-vsweep-short {
+  0% { opacity: 0; transform: translateY(-100%); }
+  0.5% { opacity: 1; }
+  5.5% { opacity: 1; transform: translateY(200%); }
+  6%, 100% { opacity: 0; transform: translateY(200%); }
+}
+
+/* ---- The 4 Steps of the Matrics Commerce Cycle ----
+ * Stages 01–04 take 2.5 s turns in the same 10 s loop: the rail marker and the
+ * card's symbol fill, the card edge glows, then a light runs on to the next
+ * marker. Card colours stay orange because the cards are dark/white panels. */
+
+.hiw-stage-ring {
+  color: var(--hiw-rest);
+  background-color: var(--hiw-rest-bg);
+  animation-name: hiw-stage-ring;
+}
+
+.hiw-stage-sweep {
+  opacity: 0;
+  background: linear-gradient(90deg, transparent, var(--hiw-accent) 55%, transparent);
+  box-shadow: 0 0 8px var(--hiw-glow);
+  transform: translateX(-100%);
+  animation-name: hiw-stage-sweep;
+}
+
+.hiw-stage-glow {
+  opacity: 0;
+  border: 1px solid rgba(219, 83, 25, 0.85);
+  box-shadow: 0 0 26px rgba(219, 83, 25, 0.35), inset 0 0 20px rgba(219, 83, 25, 0.12);
+  animation-name: hiw-stage-on;
+}
+
+.hiw-stage-icon {
+  color: #db5319;
+  background-color: rgba(219, 83, 25, 0.1);
+  animation-name: hiw-stage-icon;
+}
+
+@keyframes hiw-stage-on {
+  0% { opacity: 0; }
+  2%, 22% { opacity: 1; }
+  25%, 100% { opacity: 0; }
+}
+
+@keyframes hiw-stage-ring {
+  0%, 25%, 100% { color: var(--hiw-rest); background-color: var(--hiw-rest-bg); box-shadow: 0 0 0 0 transparent; }
+  2%, 22% { color: var(--hiw-on); background-color: var(--hiw-fill); box-shadow: 0 0 16px 2px var(--hiw-glow); }
+}
+
+@keyframes hiw-stage-icon {
+  0%, 25%, 100% { color: #db5319; background-color: rgba(219, 83, 25, 0.1); box-shadow: 0 0 0 0 transparent; }
+  2%, 22% { color: #ffffff; background-color: #db5319; box-shadow: 0 0 18px 2px rgba(219, 83, 25, 0.6); }
+}
+
+@keyframes hiw-stage-sweep {
+  0%, 18% { opacity: 0; transform: translateX(-100%); }
+  18.5% { opacity: 1; }
+  24% { opacity: 1; transform: translateX(200%); }
+  25%, 100% { opacity: 0; transform: translateX(200%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hiw-anim {
+    animation: none !important;
+  }
+}

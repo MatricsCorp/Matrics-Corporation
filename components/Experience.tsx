@@ -24,10 +24,18 @@ const Experience: React.FC<ExperienceProps> = ({ currentView, theme = 'orange' }
   // screen and slide under the header.
   const isPortraitTablet = size.width >= 768 && size.width < 1280 && size.height > size.width;
   const isMobile = size.width < 768 || isPortraitTablet;
-  // Below 1280px the landing hero text sits centred under the globe, so the
-  // camera tilts down to lift the globe into the top half of the screen
-  // (phone ≈ 22–38% of height, laptop ≈ 15–44%; text starts ≈ 55%).
-  const isCompact = size.width < 1280;
+  // The landing hero text sits to the right of the globe from 1280px, and also
+  // from 1024px on landscape screens (laptops, non-maximised windows). Below
+  // that it sits centred under the globe, so the camera tilts down to lift the
+  // globe into the top half of the screen (phone ≈ 22–38% of height, laptop
+  // ≈ 15–44%; text starts ≈ 55%).
+  const heroSideBySide = size.width >= 1280 || (size.width >= 1024 && size.width > size.height);
+  const isCompact = !heroSideBySide;
+  // Between 1024 and 1280px the screen is narrower, so on the landing view the
+  // globe eases a little to the left to stay clear of the text (none at 1280px+).
+  const heroShift = currentView === 'landing' && heroSideBySide && size.width < 1280
+    ? ((1280 - size.width) / 256) * 0.16
+    : 0;
   const isLight = theme === 'light';
   const isOrange = theme === 'orange';
 
@@ -79,6 +87,16 @@ const Experience: React.FC<ExperienceProps> = ({ currentView, theme = 'orange' }
       0
     );
     camera.lookAt(targetLookAt);
+
+    // Screen-space shift of the whole view (fraction of screen width), eased.
+    const cam = camera as THREE.PerspectiveCamera;
+    if (cam.isPerspectiveCamera) {
+      const targetOffset = heroShift * cam.aspect * 2 * Math.tan(THREE.MathUtils.degToRad(cam.fov / 2)) * cam.getFilmWidth();
+      if (Math.abs(cam.filmOffset - targetOffset) > 0.001) {
+        cam.filmOffset = THREE.MathUtils.lerp(cam.filmOffset, targetOffset, 0.08);
+        cam.updateProjectionMatrix();
+      }
+    }
 
     if (globeTiltGroupRef.current) {
       globeTiltGroupRef.current.rotation.x = THREE.MathUtils.lerp(globeTiltGroupRef.current.rotation.x, -mousePos.y * 0.1, 0.05);
