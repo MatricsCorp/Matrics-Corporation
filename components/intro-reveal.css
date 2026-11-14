@@ -3,7 +3,7 @@
    "Every trade, connected.", then docking into the header. No dark screen;
    clicks pass straight through. The page text waits (so nothing is drawn over
    the headline) and fades in as the logo docks. */
-.intro-content { transition: opacity 0.6s ease; }
+.intro-content { transition: opacity 0.6s ease 0.25s; } /* starts after the intro tagline has gone */
 html.intro-hold .intro-content { opacity: 0; }
 
 .intro-float {
@@ -108,7 +108,7 @@ html.intro-hold .intro-content { opacity: 0; }
 .is-narrow .intro-tagline { font-size: 11px; letter-spacing: 0.28em; }
 @media (max-width: 359px) { .is-narrow .intro-tagline { font-size: 10px; letter-spacing: 0.18em; } }
 .is-tagline .intro-tagline { opacity: 1; transform: none; }
-.is-dock .intro-tagline { transform: translateY(-6px); }
+.is-dock .intro-tagline { transform: translateY(-6px); transition-duration: 0.2s; }
 
 /* Soft shadow pool behind the logo so it reads on the bright page */
 .intro-shade {
