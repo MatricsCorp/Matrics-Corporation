@@ -1,9 +1,10 @@
-/* First-visit floating logo: appears over the site (no dark screen), lights
-   up, then glides into the header. Clicks pass straight through. While it
-   floats, the page text waits so the logo isn't drawn over the headline; the
-   text fades in as the logo lands. */
+/* First-visit intro: the logo flies in along a trade route like a flag, lights
+   up its network, then docks into the header. No dark screen; clicks pass
+   straight through. While it travels the page text waits (so the logo isn't
+   drawn over the headline) and fades in as the logo docks. */
 .intro-content { transition: opacity 0.6s ease; }
-html.intro-pending .intro-content { opacity: 0; }
+html.intro-hold .intro-content { opacity: 0; }
+
 .intro-float {
   --intro-w: min(72vw, 640px);
   position: fixed;
@@ -11,6 +12,34 @@ html.intro-pending .intro-content { opacity: 0; }
   z-index: 1000;
   pointer-events: none;
 }
+
+/* ---------- the trade route ---------- */
+.intro-route {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  transition: opacity 0.5s ease;
+}
+.is-dock .intro-route,
+.is-landed .intro-route { opacity: 0; }
+.intro-route-line {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.75);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 0.5 9;
+}
+.intro-route-origin {
+  fill: #fff;
+  animation: intro-origin 1.2s ease-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.intro-route-hub circle { transform-box: fill-box; transform-origin: center; }
+.intro-route-hub-ring { fill: none; stroke: rgba(255, 255, 255, 0.85); stroke-width: 2; opacity: 0; }
+.intro-route-hub-dot { fill: #fff; opacity: 0; }
+.intro-route-hub.is-lit .intro-route-hub-dot { animation: intro-hub-dot 0.35s ease-out forwards; }
+.intro-route-hub.is-lit .intro-route-hub-ring { animation: intro-hub-ring 0.9s ease-out forwards; }
 
 /* Soft shadow pool behind the logo so it reads on the bright page */
 .intro-shade {
@@ -22,37 +51,54 @@ html.intro-pending .intro-content { opacity: 0; }
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: radial-gradient(ellipse at center, rgba(48, 14, 0, 0.42) 0%, rgba(48, 14, 0, 0.18) 42%, rgba(48, 14, 0, 0) 70%);
-  animation: intro-shade-in 0.6s ease-out backwards; /* backwards: lets the fade-out below take over */
+  animation: intro-shade-in 0.6s ease-out 1s backwards; /* appears as the logo arrives; backwards lets the fade-out below take over */
   transition: opacity 0.45s ease;
 }
-.is-fly .intro-shade,
+.is-dock .intro-shade,
 .is-landed .intro-shade { opacity: 0; }
 
+/* ---------- the logo ---------- */
 .intro-fly {
   position: absolute;
   width: var(--intro-w);
   left: calc(50% - var(--intro-w) / 2);
   top: calc(45% - var(--intro-w) / 8.15); /* logo is 4.075 : 1 */
   transform-origin: 0 0;
+  perspective: 900px;
+  will-change: transform;
+}
+.intro-travel {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1630 / 400;
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+}
+.intro-flag {
+  position: absolute;
+  inset: 0;
+  filter: drop-shadow(0 10px 28px rgba(60, 16, 0, 0.5));
+}
+.intro-flag-strip {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background-repeat: no-repeat;
   will-change: transform;
 }
 .intro-bob {
-  animation:
-    intro-in 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) both,
-    intro-bob 2.6s ease-in-out 0.6s infinite;
+  position: absolute;
+  inset: 0;
+  animation: intro-bob 2.6s ease-in-out infinite;
 }
 .intro-logo { width: 100%; }
 .intro-logo .mlogo-base { filter: drop-shadow(0 10px 28px rgba(60, 16, 0, 0.5)); }
 
-/* Freeze the bob while gliding so the logo lands exactly on the header one */
-.is-fly .intro-bob,
+/* Freeze the bob while docking so the logo lands exactly on the header one */
+.is-dock .intro-bob,
 .is-landed .intro-bob { animation-play-state: paused; }
 .is-landed .intro-fly { opacity: 0; transition: opacity 0.3s ease; }
 
-@keyframes intro-in {
-  from { opacity: 0; transform: scale(0.92); filter: blur(8px); }
-  to { opacity: 1; transform: none; filter: none; }
-}
 @keyframes intro-bob {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
@@ -60,4 +106,16 @@ html.intro-pending .intro-content { opacity: 0; }
 @keyframes intro-shade-in {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+@keyframes intro-origin {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0.35; transform: scale(1.8); }
+}
+@keyframes intro-hub-dot {
+  from { opacity: 0; transform: scale(0.2); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes intro-hub-ring {
+  0% { opacity: 1; transform: scale(0.4); }
+  100% { opacity: 0; transform: scale(2.2); }
 }

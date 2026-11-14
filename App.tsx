@@ -42,7 +42,7 @@ const App: React.FC = () => {
   const [showIntro, setShowIntro] = useState(shouldShowIntro);
   const endIntro = useCallback(() => setShowIntro(false), []);
   useEffect(() => {
-    if (!showIntro) document.documentElement.classList.remove('intro-pending');
+    if (!showIntro) document.documentElement.classList.remove('intro-pending', 'intro-hold');
   }, [showIntro]);
 
   // Sync route with browser history

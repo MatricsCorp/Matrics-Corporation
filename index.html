@@ -17,7 +17,7 @@
         var replay = /[?&]intro(=|&|$)/.test(location.search);
         var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (replay || (!calm && !localStorage.getItem('matrics-intro-seen'))) {
-          document.documentElement.classList.add('intro-pending');
+          document.documentElement.classList.add('intro-pending', 'intro-hold');
           var link = document.createElement('link');
           link.rel = 'preload'; link.as = 'image'; link.href = '/brand/matrics-grid.webp';
           link.setAttribute('fetchpriority', 'high');
