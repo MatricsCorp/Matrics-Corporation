@@ -57,13 +57,13 @@ const Footer: React.FC<FooterProps> = ({
               Get Early Access
             </button>
             <a
-              href="mailto:contact@matricstarang.com"
+              href="mailto:contact@matricscorporation.com"
               className={`flex items-center space-x-1.5 transition-colors font-mono ${
                 isLight ? 'hover:text-[#db5319]' : 'hover:text-[#db5319]'
               }`}
             >
               <Mail size={13} className="text-[#db5319]" />
-              <span>contact@matricstarang.com</span>
+              <span>contact@matricscorporation.com</span>
             </a>
           </div>
         </div>

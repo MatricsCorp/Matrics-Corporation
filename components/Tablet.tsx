@@ -1,5 +1,5 @@
 
-import React, { Suspense, useMemo, useRef, useState, useEffect } from 'react';
+import React, { Suspense, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useFrame } from '@react-three/fiber';
 import { Text } from '@react-three/drei';
@@ -13,7 +13,7 @@ interface TabletProps {
 const Tablet: React.FC<TabletProps> = ({ position, theme = 'orange' }) => {
   const scanLineRef = useRef<THREE.Mesh>(null);
   const reflectionRef = useRef<THREE.Group>(null);
-  const [displayText, setDisplayText] = useState("MATRICS CORPORATION");
+  const displayText = "MATRICS CORPORATION";
   
   const isLight = theme === 'light';
   const isOrange = theme === 'orange';
@@ -35,13 +35,6 @@ const Tablet: React.FC<TabletProps> = ({ position, theme = 'orange' }) => {
       tabletShape: shape,
       screenGeometry: new THREE.ShapeGeometry(shape)
     };
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setDisplayText(prev => prev === "MATRICS CORPORATION" ? "MATRICS TARANG" : "MATRICS CORPORATION");
-    }, 5000);
-    return () => clearInterval(interval);
   }, []);
 
   useFrame((state) => {

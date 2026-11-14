@@ -330,11 +330,6 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
             }`}>
               Matrics
             </span>
-            <span className={`hidden sm:inline text-[10px] font-mono uppercase tracking-[0.3em] font-bold ${
-              isLight ? 'text-slate-500' : 'text-white/60'
-            }`}>
-              Tarang
-            </span>
           </button>
 
           {/* Zone 2: 4 Clean Navigation Links */}
