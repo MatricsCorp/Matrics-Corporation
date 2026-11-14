@@ -24,7 +24,9 @@ import {
   Boxes,
   Zap,
   Lock,
-  Flame
+  Flame,
+  LogIn,
+  ArrowRight
 } from 'lucide-react';
 import type { AppTheme, AppView } from '../App';
 import HowItWorks from './HowItWorks';
@@ -35,6 +37,20 @@ import AppDownload from './AppDownload';
 import EarlyAccessModal from './EarlyAccessModal';
 import PartnerLoginModal from './PartnerLoginModal';
 import LegalModal from './LegalModal';
+
+const NAV_ITEMS: { id: AppView; label: string }[] = [
+  { id: 'ecosystem', label: 'Ecosystem' },
+  { id: 'network', label: 'Network' },
+  { id: 'partners', label: 'Partners' },
+  { id: 'investors', label: 'Investors' },
+  { id: 'app', label: 'App' },
+];
+
+const THEME_OPTIONS: { id: AppTheme; label: string; Icon: typeof Sun }[] = [
+  { id: 'orange', label: 'Studio', Icon: Sparkles },
+  { id: 'light', label: 'Light', Icon: Sun },
+  { id: 'dark', label: 'Dark', Icon: Moon },
+];
 
 interface UIProps {
   view: AppView;
@@ -57,6 +73,16 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
   const isLight = theme === 'light';
   const isOrange = theme === 'orange';
   const isDark = theme === 'dark';
+
+  // Phone nav scrolls sideways: keep the current section in view.
+  const mobileNavRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const nav = mobileNavRef.current;
+    const active = nav?.querySelector<HTMLElement>('[data-active]');
+    if (!nav || !active) { nav?.scrollTo({ left: 0 }); return; }
+    const left = active.offsetLeft - (nav.clientWidth - active.offsetWidth) / 2;
+    nav.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
+  }, [view]);
 
   const [activePillar, setActivePillar] = useState(0);
   const [earlyAccessOpen, setEarlyAccessOpen] = useState(false);
@@ -308,8 +334,8 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
     }`}>
       
       {/* ========================================================================= */}
-      {/* GLOBAL HEADER: Clean 3-Zone Contract */}
-      {/* Zone 1: Brand title | Zone 2: Nav links | Zone 3: Actions */}
+      {/* GLOBAL HEADER                                                             */}
+      {/* Brand | primary navigation (centred) | utilities · actions               */}
       {/* ========================================================================= */}
       <header className={`sticky top-0 w-full z-[300] backdrop-blur-xl border-b transition-all duration-300 ${
         isLight 
@@ -318,12 +344,13 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
             ? 'bg-stone-950/70 border-white/10 shadow-lg'
             : 'bg-[#0a0500]/80 border-white/10'
       }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-3.5 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 h-16 flex items-center justify-between gap-3 lg:gap-4 xl:gap-6">
           
-          {/* Zone 1: Single Brand Element */}
+          {/* Brand */}
           <button 
             onClick={() => setView('landing')} 
-            className="flex items-center space-x-3 text-left group"
+            aria-label="Matrics — home"
+            className="shrink-0 flex items-center text-left group"
           >
             <span className={`text-2xl sm:text-3xl font-black italic tracking-tighter transition-transform duration-300 group-hover:scale-105 ${
               isOrange ? 'text-white' : 'text-[#db5319]'
@@ -332,120 +359,83 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
             </span>
           </button>
 
-          {/* Zone 2: 4 Clean Navigation Links */}
-          <nav className="hidden lg:flex items-center space-x-6 xl:space-x-10 text-[10px] uppercase font-bold tracking-[0.25em]">
-            <button 
-              onClick={() => setView('ecosystem')} 
-              className={`transition-all pb-1 ${
-                view === 'ecosystem' 
-                  ? 'text-[#db5319] border-b-2 border-[#db5319]' 
-                  : isLight ? 'text-slate-600 hover:text-slate-900' : 'text-white/70 hover:text-white'
-              }`}
-            >
-              Ecosystem
-            </button>
-            <button 
-              onClick={() => setView('network')} 
-              className={`transition-all pb-1 ${
-                view === 'network' 
-                  ? 'text-[#db5319] border-b-2 border-[#db5319]' 
-                  : isLight ? 'text-slate-600 hover:text-slate-900' : 'text-white/70 hover:text-white'
-              }`}
-            >
-              Network
-            </button>
-            <button 
-              onClick={() => setView('partners')} 
-              className={`transition-all pb-1 ${
-                view === 'partners' 
-                  ? 'text-[#db5319] border-b-2 border-[#db5319]' 
-                  : isLight ? 'text-slate-600 hover:text-slate-900' : 'text-white/70 hover:text-white'
-              }`}
-            >
-              Partners
-            </button>
-            <button 
-              onClick={() => setView('investors')} 
-              className={`transition-all pb-1 ${
-                view === 'investors' 
-                  ? 'text-[#db5319] border-b-2 border-[#db5319]' 
-                  : isLight ? 'text-slate-600 hover:text-slate-900' : 'text-white/70 hover:text-white'
-              }`}
-            >
-              Investors
-            </button>
-            <button 
-              onClick={() => setView('app')} 
-              className={`transition-all pb-1 ${
-                view === 'app' 
-                  ? 'text-[#db5319] border-b-2 border-[#db5319]' 
-                  : isLight ? 'text-slate-600 hover:text-slate-900' : 'text-white/70 hover:text-white'
-              }`}
-            >
-              App
-            </button>
+          {/* Primary navigation */}
+          <nav aria-label="Primary" className="hidden lg:flex flex-1 min-w-0 justify-center items-center gap-0.5 xl:gap-1">
+            {NAV_ITEMS.map(({ id, label }) => {
+              const active = view === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setView(id)}
+                  aria-current={active ? 'page' : undefined}
+                  className={`relative h-9 px-2.5 xl:px-4 rounded-full text-[13px] xl:text-[14px] font-semibold tracking-[0.01em] whitespace-nowrap transition-colors ${
+                    active
+                      ? isLight ? 'text-[#db5319] bg-[#db5319]/[0.08]' : 'text-white bg-white/[0.12]'
+                      : isLight ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-900/[0.05]' : 'text-white/75 hover:text-white hover:bg-white/[0.08]'
+                  }`}
+                >
+                  {label}
+                  {active && (
+                    <span aria-hidden="true" className="absolute left-1/2 -translate-x-1/2 bottom-1 h-[2px] w-4 rounded-full bg-[#db5319]" />
+                  )}
+                </button>
+              );
+            })}
           </nav>
 
-          {/* Zone 3: Actions (Theme switcher + GET EARLY ACCESS button) */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            {/* Staff & channel-partner login (case-management app) */}
-            <button
-              onClick={openPartnerLogin}
-              className={`hidden lg:inline whitespace-nowrap text-[10px] uppercase tracking-[0.2em] font-bold ${isLight ? 'text-slate-600 hover:text-slate-900' : 'text-white/70 hover:text-white'}`}
-            >
-              Partner login
-            </button>
+          {/* Utilities (theme) · Actions (partner login, early access) */}
+          <div className="shrink-0 flex items-center gap-2 xl:gap-3">
             {setTheme && (
-              <div className={`flex items-center p-1 rounded-full border ${
-                isLight 
-                  ? 'border-slate-200 bg-slate-100/80' 
-                  : isOrange
-                    ? 'border-white/20 bg-black/40'
-                    : 'border-white/15 bg-white/5'
-              }`}>
-                <button
-                  onClick={() => setTheme('orange')}
-                  title="Orange Studio Theme"
-                  className={`flex items-center space-x-1 px-2.5 max-[400px]:px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all ${
-                    isOrange 
-                      ? 'bg-white text-[#d85104] shadow-sm' 
-                      : 'text-white/70 hover:text-white'
-                  }`}
-                >
-                  <Sparkles size={10} className={isOrange ? 'text-[#d85104]' : 'text-amber-300'} />
-                  <span className="hidden sm:inline">Studio</span>
-                </button>
-                <button
-                  onClick={() => setTheme('light')}
-                  title="Light Theme"
-                  className={`flex items-center space-x-1 px-2.5 max-[400px]:px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all ${
-                    isLight 
-                      ? 'bg-slate-900 text-white shadow-sm' 
-                      : 'text-white/70 hover:text-white'
-                  }`}
-                >
-                  <Sun size={10} className={isLight ? 'text-amber-400' : ''} />
-                  <span className="hidden sm:inline">Light</span>
-                </button>
-                <button
-                  onClick={() => setTheme('dark')}
-                  title="Dark Theme"
-                  className={`flex items-center space-x-1 px-2.5 max-[400px]:px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all ${
-                    isDark 
-                      ? 'bg-white text-black shadow-sm' 
-                      : 'text-white/70 hover:text-white'
-                  }`}
-                >
-                  <Moon size={10} className={isDark ? 'text-amber-400' : ''} />
-                  <span className="hidden sm:inline">Dark</span>
-                </button>
+              <div
+                role="group"
+                aria-label="Colour theme"
+                className={`flex items-center h-9 p-1 rounded-full border ${
+                  isLight 
+                    ? 'border-slate-200 bg-slate-100/80' 
+                    : 'border-white/15 bg-white/[0.06]'
+                }`}
+              >
+                {THEME_OPTIONS.map(({ id, label, Icon }) => {
+                  const active = theme === id;
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => setTheme(id)}
+                      title={`${label} theme`}
+                      aria-label={`${label} theme`}
+                      aria-pressed={active}
+                      className={`grid place-items-center h-7 w-7 rounded-full transition-all ${
+                        active
+                          ? isLight ? 'bg-white text-[#db5319] shadow-sm' : 'bg-white text-[#d85104] shadow-sm'
+                          : isLight ? 'text-slate-500 hover:text-slate-900' : 'text-white/60 hover:text-white'
+                      }`}
+                    >
+                      <Icon size={14} strokeWidth={2.25} />
+                    </button>
+                  );
+                })}
               </div>
             )}
 
-            {/* GET EARLY ACCESS Button */}
+            <span aria-hidden="true" className={`hidden lg:block h-6 w-px ${isLight ? 'bg-slate-200' : 'bg-white/15'}`} />
+
+            {/* Secondary action: staff & channel-partner login (case-management app) */}
+            <button
+              onClick={openPartnerLogin}
+              className={`hidden lg:inline-flex items-center gap-1.5 h-9 px-4 rounded-full border text-[13px] font-semibold whitespace-nowrap transition-colors ${
+                isLight
+                  ? 'border-slate-300 text-slate-800 hover:bg-slate-900/[0.04] hover:border-slate-400'
+                  : 'border-white/25 text-white hover:bg-white/10 hover:border-white/40'
+              }`}
+            >
+              <LogIn size={14} strokeWidth={2.25} />
+              Partner login
+            </button>
+
+            {/* Primary action */}
             <button 
               onClick={() => setEarlyAccessOpen(true)}
-              className={`px-4 sm:px-5 max-[400px]:px-3 py-2 rounded-full text-[9px] sm:text-[10px] uppercase tracking-[0.2em] max-[400px]:tracking-[0.15em] font-black transition-all shadow-md whitespace-nowrap ${
+              className={`inline-flex items-center gap-1.5 h-9 px-4 sm:px-5 max-[400px]:px-3 rounded-full text-[12px] sm:text-[13px] font-bold whitespace-nowrap transition-all shadow-md ${
                 isOrange
                   ? 'bg-white text-[#d85104] hover:bg-white/90'
                   : isLight
@@ -453,44 +443,48 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
                     : 'bg-white text-black hover:bg-slate-200'
               }`}
             >
-              Get Early Access
+              Get early access
+              <ArrowRight size={14} strokeWidth={2.5} className="hidden sm:block lg:hidden xl:block" />
             </button>
           </div>
         </div>
 
-        {/* Mobile Navigation Bar */}
-        <div className="flex lg:hidden items-center justify-around py-2 border-t border-white/10 text-[9px] uppercase font-bold tracking-widest">
-          <button 
-            onClick={() => setView('ecosystem')} 
-            className={view === 'ecosystem' ? 'text-[#db5319]' : isLight ? 'text-slate-600' : 'text-white/70'}
+        {/* Phones and tablets: navigation row, with partner login as a pinned action */}
+        <div className={`flex lg:hidden items-center gap-2 h-11 pl-2 pr-3 sm:px-4 border-t ${isLight ? 'border-slate-200/90' : 'border-white/10'}`}>
+          <nav
+            ref={mobileNavRef}
+            aria-label="Primary"
+            className="flex-1 min-w-0 flex items-center gap-0.5 sm:justify-center overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [mask-image:linear-gradient(to_right,black_90%,transparent)] sm:[mask-image:none]"
           >
-            Ecosystem
-          </button>
-          <button 
-            onClick={() => setView('network')} 
-            className={view === 'network' ? 'text-[#db5319]' : isLight ? 'text-slate-600' : 'text-white/70'}
+            {NAV_ITEMS.map(({ id, label }) => {
+              const active = view === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setView(id)}
+                  aria-current={active ? 'page' : undefined}
+                  data-active={active || undefined}
+                  className={`shrink-0 h-8 px-2 sm:px-3 rounded-full text-[13px] font-semibold whitespace-nowrap transition-colors ${
+                    active
+                      ? isLight ? 'text-[#db5319] bg-[#db5319]/[0.08]' : 'text-white bg-white/[0.12]'
+                      : isLight ? 'text-slate-600' : 'text-white/75'
+                  }`}
+                >
+                  {label}
+                </button>
+              );
+            })}
+          </nav>
+          <button
+            onClick={openPartnerLogin}
+            aria-label="Partner login"
+            className={`shrink-0 inline-flex items-center gap-1 h-8 px-3 rounded-full border text-[12px] font-semibold whitespace-nowrap ${
+              isLight ? 'border-slate-300 text-slate-800' : 'border-white/25 text-white'
+            }`}
           >
-            Network
+            <LogIn size={13} strokeWidth={2.25} />
+            Log in
           </button>
-          <button 
-            onClick={() => setView('partners')} 
-            className={view === 'partners' ? 'text-[#db5319]' : isLight ? 'text-slate-600' : 'text-white/70'}
-          >
-            Partners
-          </button>
-          <button 
-            onClick={() => setView('investors')} 
-            className={view === 'investors' ? 'text-[#db5319]' : isLight ? 'text-slate-600' : 'text-white/70'}
-          >
-            Investors
-          </button>
-          <button 
-            onClick={() => setView('app')} 
-            className={view === 'app' ? 'text-[#db5319]' : isLight ? 'text-slate-600' : 'text-white/70'}
-          >
-            App
-          </button>
-          <button onClick={openPartnerLogin} className={isLight ? 'text-slate-600' : 'text-white/70'}>Partner login</button>
         </div>
       </header>
 
