@@ -1,0 +1,162 @@
+/*
+ * "How Matrics Works" — flow animation.
+ *
+ * Every animated piece shares one 10-second loop and is placed in it with
+ * --hiw-delay, so the sequence stays in step:
+ *   0.0–4.8 s  Manufacturer → Wholesaler → Kirana Store → Consumer light up in
+ *              turn; a light runs along each card, through the arrow to the
+ *              next card, and drops into the transaction band below.
+ *   4.8–8.4 s  The six band steps (Order … Reconciled) light up in turn;
+ *              Transporters glow during Dispatch/Delivery, Banks during
+ *              Payment/Reconciled.
+ *   8.4–9.8 s  The whole band pulses (ledger synchronised), then it repeats.
+ *
+ * Only opacity, transform, colour and small filters change. At rest (and for
+ * visitors who ask for reduced motion) every overlay is invisible, so the
+ * section looks exactly as it did before.
+ */
+
+.hiw-anim {
+  animation-duration: 10s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+  animation-fill-mode: both;
+  animation-delay: var(--hiw-delay, 0s);
+}
+
+/* Paused while the diagram is off screen. */
+.hiw-paused .hiw-anim {
+  animation-play-state: paused;
+}
+
+/* Card / step highlight: orange edge and soft glow. */
+.hiw-glow,
+.hiw-glow-fast,
+.hiw-band {
+  opacity: 0;
+  border: 1px solid rgba(219, 83, 25, 0.9);
+  box-shadow: 0 0 22px rgba(219, 83, 25, 0.45), inset 0 0 22px rgba(219, 83, 25, 0.14);
+}
+.hiw-glow { animation-name: hiw-on-long; }
+.hiw-glow-fast { animation-name: hiw-on-short; }
+.hiw-band {
+  border-width: 2px;
+  box-shadow: 0 0 50px rgba(219, 83, 25, 0.5), inset 0 0 40px rgba(219, 83, 25, 0.22);
+  animation-name: hiw-band;
+}
+
+/* Icon tile turns solid orange with a white symbol while its card is active. */
+.hiw-icon { animation-name: hiw-icon; }
+
+/* Light running along the top edge of the active card. */
+.hiw-sweep,
+.hiw-sweep-fast {
+  opacity: 0;
+  background: linear-gradient(90deg, transparent, #ffb27a 45%, #db5319 70%, transparent);
+  box-shadow: 0 0 8px rgba(219, 83, 25, 0.9);
+  transform: translateX(-100%);
+}
+.hiw-sweep { animation-name: hiw-sweep; }
+.hiw-sweep-fast { animation-name: hiw-sweep-short; }
+
+/* Arrow between two cards: faint at rest, lights as the flow passes it. */
+.hiw-chevron {
+  opacity: 0.3;
+  animation-name: hiw-chevron;
+}
+
+/* Light dropping from a card into the transaction band. */
+.hiw-drop {
+  opacity: 0;
+  background: linear-gradient(180deg, transparent, #ffb27a, #db5319);
+  box-shadow: 0 0 8px rgba(219, 83, 25, 0.9);
+  transform: translateY(-100%);
+  animation-name: hiw-drop;
+}
+
+/* Where the drop lands on the band's top edge. */
+.hiw-seg {
+  opacity: 0;
+  background: #db5319;
+  box-shadow: 0 0 12px 2px rgba(219, 83, 25, 0.8);
+  animation-name: hiw-seg;
+}
+
+/* Down / up arrows glow with their card. */
+.hiw-arrow { animation-name: hiw-arrow; }
+
+@keyframes hiw-on-long {
+  0% { opacity: 0; }
+  3%, 12% { opacity: 1; }
+  15.5%, 100% { opacity: 0; }
+}
+
+@keyframes hiw-on-short {
+  0% { opacity: 0; }
+  1.5%, 6% { opacity: 1; }
+  8%, 100% { opacity: 0; }
+}
+
+@keyframes hiw-band {
+  0% { opacity: 0; }
+  3%, 8% { opacity: 1; }
+  14%, 100% { opacity: 0; }
+}
+
+/* Resting values match the tile's normal look (orange symbol on a 10% orange tile). */
+@keyframes hiw-icon {
+  0%, 15.5%, 100% {
+    color: #db5319;
+    background-color: rgba(219, 83, 25, 0.1);
+    box-shadow: 0 0 0 0 rgba(219, 83, 25, 0);
+  }
+  3%, 12% {
+    color: #ffffff;
+    background-color: #db5319;
+    box-shadow: 0 0 18px 2px rgba(219, 83, 25, 0.65);
+  }
+}
+
+@keyframes hiw-sweep {
+  0% { opacity: 0; transform: translateX(-100%); }
+  1% { opacity: 1; }
+  11% { opacity: 1; transform: translateX(200%); }
+  12%, 100% { opacity: 0; transform: translateX(200%); }
+}
+
+@keyframes hiw-sweep-short {
+  0% { opacity: 0; transform: translateX(-100%); }
+  0.5% { opacity: 1; }
+  5.5% { opacity: 1; transform: translateX(200%); }
+  6%, 100% { opacity: 0; transform: translateX(200%); }
+}
+
+@keyframes hiw-chevron {
+  0%, 9% { opacity: 0.3; transform: none; filter: none; }
+  11.5%, 13% { opacity: 1; transform: translateX(3px); filter: drop-shadow(0 0 4px #db5319) drop-shadow(0 0 8px #db5319); }
+  17%, 100% { opacity: 0.3; transform: none; filter: none; }
+}
+
+@keyframes hiw-drop {
+  0% { opacity: 0; transform: translateY(-100%); }
+  4% { opacity: 1; }
+  9% { opacity: 1; transform: translateY(260%); }
+  10%, 100% { opacity: 0; transform: translateY(260%); }
+}
+
+@keyframes hiw-seg {
+  0% { opacity: 0; }
+  2%, 6% { opacity: 1; }
+  10%, 100% { opacity: 0; }
+}
+
+@keyframes hiw-arrow {
+  0%, 15.5%, 100% { filter: drop-shadow(0 0 0 transparent) drop-shadow(0 0 0 transparent); }
+  3%, 12% { filter: drop-shadow(0 0 4px #db5319) drop-shadow(0 0 10px #db5319); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hiw-anim {
+    animation: none !important;
+  }
+}

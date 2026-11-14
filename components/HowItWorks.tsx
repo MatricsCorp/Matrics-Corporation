@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { 
   Factory, 
   Building2, 
@@ -17,9 +17,17 @@ import {
   RefreshCw,
   Box,
   TrendingUp,
-  MapPin
+  MapPin,
+  ChevronRight
 } from 'lucide-react';
 import type { AppTheme } from '../App';
+import './how-it-works.css';
+
+// Place an element in the shared 10 s flow animation (see how-it-works.css).
+const at = (seconds: number) => ({ '--hiw-delay': `${seconds}s` }) as React.CSSProperties;
+const NODE_STEP = 1.2; // seconds each participant stays lit
+const EVENT_START = 4.8; // band steps start after the 4 participants
+const EVENT_STEP = 0.6; // seconds each band step stays lit
 
 interface HowItWorksProps {
   theme?: AppTheme;
@@ -29,6 +37,18 @@ interface HowItWorksProps {
 const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAccess }) => {
   const isLight = theme === 'light';
   const isOrange = theme === 'orange';
+
+  // Pause the flow animation while the diagram is off screen.
+  const diagramRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = diagramRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(([entry]) => {
+      el.classList.toggle('hiw-paused', !entry.isIntersecting);
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const participants = [
     { label: 'Manufacturer', icon: Factory, sub: 'FMCG & Industrial Producers', desc: 'Direct catalogue sync & bulk allocation' },
@@ -97,7 +117,7 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
         {/* ========================================================================= */}
         {/* INTERACTIVE DIAGRAM */}
         {/* ========================================================================= */}
-        <div className={`p-6 sm:p-10 rounded-2xl border transition-all duration-300 shadow-2xl relative overflow-hidden ${
+        <div ref={diagramRef} className={`p-6 sm:p-10 rounded-2xl border transition-all duration-300 shadow-2xl relative overflow-hidden ${
           isLight
             ? 'bg-white/95 border-slate-200/90 shadow-slate-200/60'
             : isOrange
@@ -127,14 +147,28 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
                 {participants.map((p, idx) => (
                   <div 
                     key={idx}
-                    className={`p-4 rounded-xl border flex flex-col justify-between transition-all group ${
+                    className={`relative p-4 rounded-xl border flex flex-col justify-between transition-all group ${
                       isLight 
                         ? 'bg-slate-50/80 border-slate-200/80 hover:bg-white hover:border-[#db5319]/40' 
                         : 'bg-white/[0.03] border-white/10 hover:bg-white/[0.06] hover:border-[#db5319]/50'
                     }`}
                   >
+                    {/* Flow animation: card glow, light along the top edge, arrow to the next card, drop into the band */}
+                    <span aria-hidden className="hiw-anim hiw-glow pointer-events-none absolute inset-0 rounded-xl" style={at(idx * NODE_STEP)} />
+                    <span aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-xl">
+                      <span className="hiw-anim hiw-sweep absolute top-0 left-0 h-[2px] w-1/2" style={at(idx * NODE_STEP)} />
+                    </span>
+                    {idx < participants.length - 1 && (
+                      <span aria-hidden className="hiw-anim hiw-chevron pointer-events-none absolute top-[26px] -right-[14px] hidden md:block text-[#db5319]" style={at(idx * NODE_STEP)}>
+                        <ChevronRight size={12} strokeWidth={3} />
+                      </span>
+                    )}
+                    <span aria-hidden className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 w-[2px] h-8 overflow-hidden hidden md:block">
+                      <span className="hiw-anim hiw-drop block w-full h-3 rounded-full" style={at(idx * NODE_STEP + 0.2)} />
+                    </span>
+
                     <div className="flex items-center justify-between mb-2">
-                      <div className="p-2 rounded-lg bg-[#db5319]/10 text-[#db5319]">
+                      <div className="hiw-anim hiw-icon p-2 rounded-lg bg-[#db5319]/10 text-[#db5319]" style={at(idx * NODE_STEP)}>
                         <p.icon size={16} />
                       </div>
                       <span className="text-[9px] font-mono text-[#db5319] font-bold">0{idx + 1}</span>
@@ -151,7 +185,7 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
                       </div>
                     </div>
 
-                    <div className="mt-3 pt-2 border-t border-dashed border-white/10 flex items-center justify-center text-[#db5319]">
+                    <div className="hiw-anim hiw-arrow mt-3 pt-2 border-t border-dashed border-white/10 flex items-center justify-center text-[#db5319]" style={at(idx * NODE_STEP)}>
                       <ArrowDown size={12} className="animate-bounce" />
                     </div>
                   </div>
@@ -165,6 +199,13 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
                 ? 'bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 border-[#db5319]/30 text-slate-900 shadow-inner'
                 : 'bg-gradient-to-r from-[#db5319]/15 via-[#db5319]/25 to-[#db5319]/15 border-[#db5319]/60 text-white shadow-[0_0_40px_rgba(219,83,25,0.15)]'
             }`}>
+              {/* Flow animation: where each participant's light lands, and the closing ledger pulse */}
+              <span aria-hidden className="pointer-events-none absolute -inset-x-[2px] -top-[2px] hidden md:grid grid-cols-4 gap-4">
+                {participants.map((_, i) => (
+                  <span key={i} className="hiw-anim hiw-seg h-[2px] rounded-full" style={at(i * NODE_STEP + 1.0)} />
+                ))}
+              </span>
+              <span aria-hidden className="hiw-anim hiw-band pointer-events-none absolute -inset-[2px] rounded-xl" style={at(EVENT_START + 6 * EVENT_STEP)} />
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-[#db5319]/30">
                 <div className="flex items-center space-x-2.5">
                   <div className="w-2.5 h-2.5 rounded-full bg-[#db5319] animate-ping" />
@@ -187,12 +228,16 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
                 {transactionEvents.map((ev, i) => (
                   <div 
                     key={i}
-                    className={`p-3 rounded-lg border text-center transition-all ${
+                    className={`relative p-3 rounded-lg border text-center transition-all ${
                       isLight
                         ? 'bg-white/95 border-orange-200/80 shadow-sm'
                         : 'bg-black/50 border-white/10 hover:border-[#db5319]'
                     }`}
                   >
+                    <span aria-hidden className="hiw-anim hiw-glow-fast pointer-events-none absolute inset-0 rounded-lg" style={at(EVENT_START + i * EVENT_STEP)} />
+                    <span aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-lg">
+                      <span className="hiw-anim hiw-sweep-fast absolute top-0 left-0 h-[2px] w-1/2" style={at(EVENT_START + i * EVENT_STEP)} />
+                    </span>
                     <div className="text-[9px] font-mono text-[#db5319] font-bold">
                       STEP {ev.step}
                     </div>
@@ -220,11 +265,12 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Transporters & Logistics */}
-                <div className={`p-4 sm:p-5 rounded-xl border flex flex-col justify-between ${
+                <div className={`relative p-4 sm:p-5 rounded-xl border flex flex-col justify-between ${
                   isLight 
                     ? 'bg-slate-50/80 border-slate-200/80' 
                     : 'bg-white/[0.03] border-white/10'
                 }`}>
+                  <span aria-hidden className="hiw-anim hiw-glow pointer-events-none absolute inset-0 rounded-xl" style={at(EVENT_START + 2 * EVENT_STEP)} />
                   <div className="flex items-center space-x-3 mb-3">
                     <div className="p-2.5 rounded-lg bg-[#db5319]/10 text-[#db5319]">
                       <Truck size={18} />
@@ -254,18 +300,19 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
                     </div>
                   </div>
 
-                  <div className="mt-3 pt-2 flex items-center justify-center text-[#db5319]">
+                  <div className="hiw-anim hiw-arrow mt-3 pt-2 flex items-center justify-center text-[#db5319]" style={at(EVENT_START + 2 * EVENT_STEP)}>
                     <ArrowUp size={12} className="animate-bounce" />
                     <span className="text-[9px] font-mono font-bold ml-1 uppercase">Feeds Dispatch & Delivery Milestones</span>
                   </div>
                 </div>
 
                 {/* Banks & Payment Partners */}
-                <div className={`p-4 sm:p-5 rounded-xl border flex flex-col justify-between ${
+                <div className={`relative p-4 sm:p-5 rounded-xl border flex flex-col justify-between ${
                   isLight 
                     ? 'bg-slate-50/80 border-slate-200/80' 
                     : 'bg-white/[0.03] border-white/10'
                 }`}>
+                  <span aria-hidden className="hiw-anim hiw-glow pointer-events-none absolute inset-0 rounded-xl" style={at(EVENT_START + 4 * EVENT_STEP)} />
                   <div className="flex items-center space-x-3 mb-3">
                     <div className="p-2.5 rounded-lg bg-[#db5319]/10 text-[#db5319]">
                       <Landmark size={18} />
@@ -295,7 +342,7 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
                     </div>
                   </div>
 
-                  <div className="mt-3 pt-2 flex items-center justify-center text-[#db5319]">
+                  <div className="hiw-anim hiw-arrow mt-3 pt-2 flex items-center justify-center text-[#db5319]" style={at(EVENT_START + 4 * EVENT_STEP)}>
                     <ArrowUp size={12} className="animate-bounce" />
                     <span className="text-[9px] font-mono font-bold ml-1 uppercase">Feeds Payment & Reconciliation Rails</span>
                   </div>
