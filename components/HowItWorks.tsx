@@ -18,7 +18,8 @@ import {
   Box,
   TrendingUp,
   MapPin,
-  ChevronRight
+  ChevronRight,
+  Database
 } from 'lucide-react';
 import type { AppTheme } from '../App';
 import './how-it-works.css';
@@ -26,8 +27,20 @@ import './how-it-works.css';
 // Place an element in the shared 10 s flow animation (see how-it-works.css).
 const at = (seconds: number) => ({ '--hiw-delay': `${seconds}s` }) as React.CSSProperties;
 const NODE_STEP = 1.2; // seconds each participant stays lit
-const EVENT_START = 4.8; // band steps start after the 4 participants
-const EVENT_STEP = 0.6; // seconds each band step stays lit
+const EVENT_START = 5.8; // ledger steps start once the last participant's light reaches the ledger
+const EVENT_STEP = 0.5; // seconds each ledger step stays lit
+const LEDGER_SYNC = EVENT_START + 6 * EVENT_STEP; // closing pulse of the ledger
+
+// Rail under the four participant columns (grid gap 16px): each run carries
+// that participant's light from its column centre to the middle, where the
+// stem drops into the ledger. Runs right of centre are mirrored.
+const COL = '(100% - 48px)';
+const RAIL_RUNS = [
+  { landAt: `calc(${COL} / 8)`, left: `calc(${COL} / 8)`, width: `calc(50% - ${COL} / 8)`, towardsLeft: false },
+  { landAt: `calc(3 * ${COL} / 8 + 16px)`, left: `calc(3 * ${COL} / 8 + 16px)`, width: `calc(50% - 3 * ${COL} / 8 - 16px)`, towardsLeft: false },
+  { landAt: `calc(5 * ${COL} / 8 + 32px)`, left: '50%', width: `calc(5 * ${COL} / 8 + 32px - 50%)`, towardsLeft: true },
+  { landAt: `calc(7 * ${COL} / 8 + 48px)`, left: '50%', width: `calc(7 * ${COL} / 8 + 48px - 50%)`, towardsLeft: true },
+];
 
 interface HowItWorksProps {
   theme?: AppTheme;
@@ -102,7 +115,6 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
   const ringColour = isOrange ? 'border-white/50' : 'border-[#db5319]/50';
   const lineColour = isOrange ? 'bg-white/35' : 'bg-[#db5319]/35';
   const dividerColour = isLight ? 'border-slate-300/70' : isOrange ? 'border-white/25' : 'border-white/10';
-  const bandBorder = isLight ? 'border-[#db5319]/40' : isOrange ? 'border-white/45' : 'border-[#db5319]/60';
   const strongText = isLight ? 'text-slate-900' : 'text-white';
   const softText = isLight ? 'text-slate-500' : isOrange ? 'text-white/85' : 'text-white/60';
   const faintText = isLight ? 'text-slate-400' : isOrange ? 'text-white/70' : 'text-white/40';
@@ -176,7 +188,7 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-8 sm:gap-x-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-8 sm:gap-x-4 md:gap-x-4">
               {participants.map((p, idx) => (
                 <div key={idx} className="relative flex flex-col items-center text-center px-1">
                   {/* Light line + arrow to the next participant */}
@@ -214,60 +226,102 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
 
                   {/* Light dropping into the transaction layer */}
                   <span aria-hidden className="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 w-[2px] h-8 overflow-hidden hidden md:block">
-                    <span className="hiw-anim hiw-drop block w-full h-3 rounded-full" style={at(idx * NODE_STEP + 0.2)} />
+                    <span className={`absolute inset-y-0 left-1/2 w-px -translate-x-1/2 ${lineColour}`} />
+                    <span className="hiw-anim hiw-drop relative block w-full h-3 rounded-full" style={at(idx * NODE_STEP + 0.2)} />
                   </span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Central Band: The Matrics Transaction Layer (outline only) */}
-          <div className={`relative p-5 sm:p-7 rounded-xl border transition-all ${bandBorder} ${strongText}`}>
-            {/* Where each participant's light lands, and the closing ledger pulse */}
-            <span aria-hidden className="pointer-events-none absolute -inset-x-px -top-px hidden md:grid grid-cols-4 gap-4">
-              {participants.map((_, i) => (
-                <span key={i} className="hiw-anim hiw-seg h-[2px] rounded-full" style={at(i * NODE_STEP + 1.0)} />
+          {/* Central Ledger Hub: The Matrics Transaction Layer */}
+          <div className="relative flex flex-col items-center">
+            {/* Rail joining the four participants, each run carrying its light to the centre (tablet/desktop) */}
+            <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px hidden md:block">
+              <span className={`absolute top-0 h-px left-[calc((100%-48px)/8)] right-[calc((100%-48px)/8)] ${lineColour}`} />
+              {RAIL_RUNS.map((run, i) => (
+                <span key={i} className="absolute -top-px h-[3px] overflow-hidden" style={{ left: run.left, width: run.width, transform: run.towardsLeft ? 'scaleX(-1)' : undefined }}>
+                  <span className="hiw-anim hiw-run absolute inset-y-0 left-0 w-1/2 rounded-full" style={at(i * NODE_STEP + 1.0)} />
+                </span>
+              ))}
+              {RAIL_RUNS.map((run, i) => (
+                <span key={`land-${i}`} className="hiw-anim hiw-seg absolute -top-[3px] w-2 h-2 -ml-1 rounded-full" style={{ ...at(i * NODE_STEP + 0.95), left: run.landAt }} />
               ))}
             </span>
-            <span aria-hidden className="hiw-anim hiw-band pointer-events-none absolute -inset-px rounded-xl" style={at(EVENT_START + 6 * EVENT_STEP)} />
 
-            <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b ${dividerColour}`}>
-              <div className="flex items-center space-x-2.5">
-                <div className={`w-2.5 h-2.5 rounded-full animate-ping ${accentBg}`} />
-                <span className="text-xs sm:text-sm font-black uppercase tracking-wider">
-                  Matrics Transaction Layer
-                </span>
-                <span className={`text-[10px] px-2 py-0.5 rounded font-mono ${
-                  isLight ? 'bg-white text-slate-700' : 'bg-black/40 text-amber-200'
-                }`}>
-                  UNIFIED COMMERCIAL BAND
-                </span>
+            {/* Stem from the rail down into the ledger */}
+            <span aria-hidden className="pointer-events-none relative w-px h-10 hidden md:block">
+              <span className={`absolute inset-0 ${lineColour}`} />
+              <span className="absolute -inset-x-px inset-y-0 overflow-hidden">
+                {participants.map((_, i) => (
+                  <span key={i} className="hiw-anim hiw-stem absolute inset-x-0 top-0 h-4 rounded-full" style={at(i * NODE_STEP + 1.45)} />
+                ))}
+              </span>
+            </span>
+
+            {/* Ledger symbol */}
+            <div className="relative">
+              <div className={`hiw-anim hiw-icon w-16 h-16 rounded-full border-2 flex items-center justify-center ${ringColour}`} style={at(LEDGER_SYNC)}>
+                <Database size={26} />
               </div>
-              <div className={`text-[10px] font-mono font-semibold ${accentText}`}>
-                SYNCHRONIZED EVENT LINEAGE
-              </div>
+              {participants.map((_, i) => (
+                <span key={i} aria-hidden className="hiw-anim hiw-tick pointer-events-none absolute inset-0 rounded-full" style={at(i * NODE_STEP + 1.85)} />
+              ))}
+              <span aria-hidden className="hiw-anim hiw-halo pointer-events-none absolute inset-0 rounded-full" style={at(LEDGER_SYNC)} />
             </div>
 
-            {/* Event Chain */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
-              {transactionEvents.map((ev, i) => (
-                <div key={i} className="relative px-2 pt-2 pb-3 text-center">
-                  <div className={`text-[9px] font-mono font-bold ${accentText}`}>
-                    STEP {ev.step}
+            {/* Title */}
+            <div className={`mt-4 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1.5 ${strongText}`}>
+              <div className={`w-2.5 h-2.5 rounded-full animate-ping ${accentBg}`} />
+              <span className="text-sm sm:text-base font-black uppercase tracking-wider">
+                Matrics Transaction Layer
+              </span>
+              <span className={`text-[10px] px-2 py-0.5 rounded font-mono ${
+                isLight ? 'bg-white text-slate-700' : 'bg-black/40 text-amber-200'
+              }`}>
+                UNIFIED COMMERCIAL BAND
+              </span>
+            </div>
+            <div className={`mt-1.5 text-[10px] font-mono font-semibold tracking-wider ${accentText}`}>
+              SYNCHRONIZED EVENT LINEAGE
+            </div>
+
+            {/* Event timeline: top-to-bottom on phones, left-to-right on large screens */}
+            <div className="relative w-full max-w-[260px] mx-auto lg:max-w-none mt-8 grid grid-cols-1 lg:grid-cols-6 gap-y-5 lg:gap-x-3">
+              {transactionEvents.map((ev, i) => {
+                const last = i === transactionEvents.length - 1;
+                const when = EVENT_START + i * EVENT_STEP;
+                return (
+                  <div key={i} className="relative flex lg:flex-col items-start lg:items-center gap-3 lg:gap-0 text-left lg:text-center">
+                    {/* Line to the next step, with its light */}
+                    {!last && (
+                      <span aria-hidden className="pointer-events-none absolute left-[5px] top-[6px] w-px h-[calc(100%+20px)] lg:left-1/2 lg:top-[5px] lg:h-px lg:w-[calc(100%+12px)]">
+                        <span className={`absolute inset-0 ${lineColour}`} />
+                        <span className="absolute -inset-x-px inset-y-0 overflow-hidden lg:hidden">
+                          <span className="hiw-anim hiw-vsweep-fast absolute inset-x-0 top-0 h-1/2 rounded-full" style={at(when)} />
+                        </span>
+                        <span className="absolute inset-x-0 -inset-y-px overflow-hidden hidden lg:block">
+                          <span className="hiw-anim hiw-sweep-fast absolute inset-y-0 left-0 w-1/2 rounded-full" style={at(when)} />
+                        </span>
+                      </span>
+                    )}
+
+                    <span aria-hidden className={`hiw-anim hiw-dot relative z-[1] mt-[1px] lg:mt-0 w-[11px] h-[11px] shrink-0 rounded-full border-2 ${ringColour}`} style={at(when)} />
+
+                    <div className="lg:mt-3">
+                      <div className={`text-[9px] font-mono font-bold ${accentText}`}>
+                        STEP {ev.step}
+                      </div>
+                      <div className={`hiw-anim hiw-text text-xs font-black uppercase tracking-tight mt-0.5 ${strongText}`} style={at(when)}>
+                        {ev.name}
+                      </div>
+                      <div className={`text-[9px] mt-1 ${softText}`}>
+                        {ev.desc}
+                      </div>
+                    </div>
                   </div>
-                  <div className={`hiw-anim hiw-text text-xs font-black uppercase tracking-tight mt-0.5 ${strongText}`} style={at(EVENT_START + i * EVENT_STEP)}>
-                    {ev.name}
-                  </div>
-                  <div className={`text-[9px] mt-1 ${softText}`}>
-                    {ev.desc}
-                  </div>
-                  {/* Underline the light runs along */}
-                  <span aria-hidden className={`pointer-events-none absolute bottom-0 left-2 right-2 h-px ${lineColour}`} />
-                  <span aria-hidden className="pointer-events-none absolute -bottom-px left-2 right-2 h-[3px] overflow-hidden">
-                    <span className="hiw-anim hiw-sweep-fast absolute inset-y-0 left-0 w-1/2 rounded-full" style={at(EVENT_START + i * EVENT_STEP)} />
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
