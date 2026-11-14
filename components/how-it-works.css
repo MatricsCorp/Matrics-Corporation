@@ -219,6 +219,61 @@
   6%, 100% { opacity: 0; transform: translateY(200%); }
 }
 
+/* ---- The 4 Steps of the Matrics Commerce Cycle ----
+ * Stages 01–04 take 2.5 s turns in the same 10 s loop: the rail marker and the
+ * card's symbol fill, the card edge glows, then a light runs on to the next
+ * marker. Card colours stay orange because the cards are dark/white panels. */
+
+.hiw-stage-ring {
+  color: var(--hiw-rest);
+  background-color: var(--hiw-rest-bg);
+  animation-name: hiw-stage-ring;
+}
+
+.hiw-stage-sweep {
+  opacity: 0;
+  background: linear-gradient(90deg, transparent, var(--hiw-accent) 55%, transparent);
+  box-shadow: 0 0 8px var(--hiw-glow);
+  transform: translateX(-100%);
+  animation-name: hiw-stage-sweep;
+}
+
+.hiw-stage-glow {
+  opacity: 0;
+  border: 1px solid rgba(219, 83, 25, 0.85);
+  box-shadow: 0 0 26px rgba(219, 83, 25, 0.35), inset 0 0 20px rgba(219, 83, 25, 0.12);
+  animation-name: hiw-stage-on;
+}
+
+.hiw-stage-icon {
+  color: #db5319;
+  background-color: rgba(219, 83, 25, 0.1);
+  animation-name: hiw-stage-icon;
+}
+
+@keyframes hiw-stage-on {
+  0% { opacity: 0; }
+  2%, 22% { opacity: 1; }
+  25%, 100% { opacity: 0; }
+}
+
+@keyframes hiw-stage-ring {
+  0%, 25%, 100% { color: var(--hiw-rest); background-color: var(--hiw-rest-bg); box-shadow: 0 0 0 0 transparent; }
+  2%, 22% { color: var(--hiw-on); background-color: var(--hiw-fill); box-shadow: 0 0 16px 2px var(--hiw-glow); }
+}
+
+@keyframes hiw-stage-icon {
+  0%, 25%, 100% { color: #db5319; background-color: rgba(219, 83, 25, 0.1); box-shadow: 0 0 0 0 transparent; }
+  2%, 22% { color: #ffffff; background-color: #db5319; box-shadow: 0 0 18px 2px rgba(219, 83, 25, 0.6); }
+}
+
+@keyframes hiw-stage-sweep {
+  0%, 18% { opacity: 0; transform: translateX(-100%); }
+  18.5% { opacity: 1; }
+  24% { opacity: 1; transform: translateX(200%); }
+  25%, 100% { opacity: 0; transform: translateX(200%); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hiw-anim {
     animation: none !important;

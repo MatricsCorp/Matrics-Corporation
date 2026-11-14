@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { 
   Factory, 
   Building2, 
@@ -30,6 +30,7 @@ const NODE_STEP = 1.2; // seconds each participant stays lit
 const EVENT_START = 5.8; // ledger steps start once the last participant's light reaches the ledger
 const EVENT_STEP = 0.5; // seconds each ledger step stays lit
 const LEDGER_SYNC = EVENT_START + 6 * EVENT_STEP; // closing pulse of the ledger
+const STAGE_STEP = 2.5; // the 4 commerce-cycle stages take turns over the same 10 s loop
 
 // Rail under the four participant columns (grid gap 16px): each run carries
 // that participant's light from its column centre to the middle, where the
@@ -51,10 +52,14 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
   const isLight = theme === 'light';
   const isOrange = theme === 'orange';
 
-  // Pause the flow animation while the diagram is off screen.
-  const diagramRef = useRef<HTMLDivElement>(null);
+  // On phones each stage shows its title and summary; the full paragraph opens on "Read more".
+  const [openStages, setOpenStages] = useState<boolean[]>([false, false, false, false]);
+  const toggleStage = (i: number) => setOpenStages((prev) => prev.map((v, k) => (k === i ? !v : v)));
+
+  // Pause the animations while the section is off screen.
+  const sectionRef = useRef<HTMLElement>(null);
   useEffect(() => {
-    const el = diagramRef.current;
+    const el = sectionRef.current;
     if (!el || typeof IntersectionObserver === 'undefined') return;
     const io = new IntersectionObserver(([entry]) => {
       el.classList.toggle('hiw-paused', !entry.isIntersecting);
@@ -127,24 +132,28 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
   const steps = [
     {
       num: '01',
+      icon: FileText,
       title: 'Unified Order & Invoicing',
       summary: 'Single source of commercial truth across retail and wholesale tiers.',
       detail: 'Kirana stores place demand requests directly through verified digital channels to regional wholesalers and manufacturers. The Matrics transaction layer instantly creates a tamper-proof digital order and automated GST invoice, eliminating price ambiguity, verbal disputes, and missed allocations.',
     },
     {
       num: '02',
+      icon: Truck,
       title: 'Real-Time Physical Tracking & Custody',
       summary: 'Autonomous logistics mesh coordinating regional transport fleets.',
       detail: 'Local tempo operators, logistics providers, and transport fleets receive digital load manifests. Every vehicle milestone is tracked along the corridor, culminating in an authenticated electronic Proof of Delivery (e-POD) signed at the merchant counter upon physical unloading.',
     },
     {
       num: '03',
+      icon: RefreshCw,
       title: 'Automated Reconciled Settlements',
       summary: 'Zero dispute, sub-second payment clearance through banking partners.',
       detail: 'Physical delivery confirmation automatically unlocks payment clearance over UPI, BBPS, and core banking rails. Matrics reconciles accounts in real time on both sides, closing the gap between delivery and cash realization that traditionally traps working capital for 30–60 days.',
     },
     {
       num: '04',
+      icon: TrendingUp,
       title: 'Data-Backed Working Capital Expansion',
       summary: 'Cashflow-driven credit lines without collateral paperwork.',
       detail: 'Continuous verified transaction velocity generates an objective credit score for kiranas and distributors. Regulated banking and NBFC partners extend instant, revolving credit lines underwritten against proven commercial throughput rather than physical collateral.',
@@ -152,7 +161,7 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
   ];
 
   return (
-    <section id="how-it-works" className="relative w-full py-16 sm:py-24 px-4 sm:px-8 lg:px-16 pointer-events-auto">
+    <section ref={sectionRef} id="how-it-works" className="relative w-full py-16 sm:py-24 px-4 sm:px-8 lg:px-16 pointer-events-auto" style={flowColours}>
       <div className="max-w-7xl mx-auto space-y-16">
         
         {/* Section Header */}
@@ -175,7 +184,7 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
         {/* ========================================================================= */}
         {/* INTERACTIVE DIAGRAM — drawn straight on the page background (no panels)  */}
         {/* ========================================================================= */}
-        <div ref={diagramRef} className="relative space-y-8" style={flowColours}>
+        <div className="relative space-y-8">
 
           {/* Top Row: The Core Trade Chain */}
           <div>
@@ -390,11 +399,30 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
             </p>
           </div>
 
+          {/* Stage rail 01 → 04: each marker lights with its card, and the light runs on to the next */}
+          <div className="relative grid grid-cols-4 max-w-md mx-auto">
+            {steps.map((s, idx) => (
+              <div key={idx} className="relative flex justify-center">
+                {idx < steps.length - 1 && (
+                  <span aria-hidden className="pointer-events-none absolute left-1/2 top-[14px] h-px w-full">
+                    <span className={`absolute inset-0 ${lineColour}`} />
+                    <span className="absolute inset-x-0 -inset-y-px overflow-hidden">
+                      <span className="hiw-anim hiw-stage-sweep absolute inset-y-0 left-0 w-1/2 rounded-full" style={at(idx * STAGE_STEP)} />
+                    </span>
+                  </span>
+                )}
+                <span className={`hiw-anim hiw-stage-ring relative z-[1] w-7 h-7 rounded-full border flex items-center justify-center text-[9px] font-mono font-bold ${ringColour}`} style={at(idx * STAGE_STEP)}>
+                  {s.num}
+                </span>
+              </div>
+            ))}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
             {steps.map((s, idx) => (
               <div
                 key={idx}
-                className={`p-6 sm:p-8 rounded-xl border flex flex-col justify-between transition-all duration-300 group ${
+                className={`relative p-6 sm:p-8 rounded-xl border flex flex-col justify-between transition-all duration-300 group ${
                   isLight
                     ? 'bg-white border-slate-200/90 hover:border-[#db5319]/40 shadow-md hover:shadow-lg'
                     : isOrange
@@ -402,11 +430,17 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
                       : 'bg-zinc-950/70 border-white/10 hover:border-[#db5319]/60 shadow-xl'
                 }`}
               >
+                <span aria-hidden className="hiw-anim hiw-stage-glow pointer-events-none absolute inset-0 rounded-xl" style={at(idx * STAGE_STEP)} />
                 <div>
-                  <div className="flex items-baseline justify-between mb-4 pb-3 border-b border-white/10">
-                    <span className="text-3xl sm:text-4xl font-black italic font-mono text-[#db5319]">
-                      {s.num}.
-                    </span>
+                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
+                    <div className="flex items-center gap-3">
+                      <span className="hiw-anim hiw-stage-icon w-10 h-10 shrink-0 rounded-full border border-[#db5319]/40 flex items-center justify-center" style={at(idx * STAGE_STEP)}>
+                        <s.icon size={18} />
+                      </span>
+                      <span className="text-3xl sm:text-4xl font-black italic font-mono text-[#db5319]">
+                        {s.num}.
+                      </span>
+                    </div>
                     <span className={`text-[10px] font-mono uppercase tracking-widest ${
                       isLight ? 'text-slate-400' : 'text-white/40'
                     }`}>
@@ -424,11 +458,20 @@ const HowItWorks: React.FC<HowItWorksProps> = ({ theme = 'orange', onOpenEarlyAc
                     {s.summary}
                   </div>
 
-                  <p className={`text-xs sm:text-sm leading-relaxed ${
+                  <p id={`stage-detail-${idx}`} className={`${openStages[idx] ? 'block' : 'hidden'} md:block text-xs sm:text-sm leading-relaxed ${
                     isLight ? 'text-slate-600' : 'text-white/75'
                   }`}>
                     {s.detail}
                   </p>
+                  <button
+                    type="button"
+                    onClick={() => toggleStage(idx)}
+                    aria-expanded={openStages[idx]}
+                    aria-controls={`stage-detail-${idx}`}
+                    className="md:hidden mt-2 text-[10px] font-black uppercase tracking-widest text-[#db5319]"
+                  >
+                    {openStages[idx] ? 'Show less ↑' : 'Read more ↓'}
+                  </button>
                 </div>
 
                 <div className="pt-6 mt-6 border-t border-white/10 flex items-center justify-between">
