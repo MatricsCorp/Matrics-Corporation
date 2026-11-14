@@ -81,6 +81,18 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
   };
   const [legalModal, setLegalModal] = useState<'privacy' | 'terms' | null>(null);
 
+  // While a pop-up form is open, the page behind it doesn't scroll.
+  const anyModalOpen = earlyAccessOpen || partnerLoginOpen || legalModal !== null;
+  useEffect(() => {
+    if (!anyModalOpen) return;
+    const root = document.documentElement;
+    const previous = root.style.overflow;
+    root.style.overflow = 'hidden';
+    return () => {
+      root.style.overflow = previous;
+    };
+  }, [anyModalOpen]);
+
   // Demo data signal stream for Node Scan
   const [signals, setSignals] = useState<string[]>([
     "[DEMO] CORRIDOR_RAIPUR_01 · NODE_BOOTSTRAP_COMPLETE",
@@ -131,8 +143,10 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
     },
   ];
 
-  // Seed sample event stream
+  // Seed sample event stream (only while the Network page is open, so the
+  // timer doesn't re-render every other page every few seconds)
   useEffect(() => {
+    if (view !== 'network') return;
     const initialLogs: AuditLog[] = sampleEventsConfig.map((item, idx) => ({
       id: `evt-${Date.now()}-${idx}`,
       time: new Date(Date.now() - (5 - idx) * 35000).toLocaleTimeString([], { hour12: false }),
@@ -153,10 +167,11 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
     }, 4500);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [view]);
 
-  // Update signals stream
+  // Update signals stream (only while the Ecosystem page is open)
   useEffect(() => {
+    if (view !== 'ecosystem') return;
     const signalTemplates = [
       "CORRIDOR_RAIPUR · TEMPO_FLEET_MANIFEST_LOCKED",
       "DISPATCH_HUB · E-POD_COUNTERTOP_SIGNATURE_CONFIRMED",
@@ -173,7 +188,7 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
     }, 3200);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [view]);
 
   // Ecosystem modules (The 4 Layers of Matrics)
   const ecosystemPillars = [
@@ -379,7 +394,7 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
                 <button
                   onClick={() => setTheme('orange')}
                   title="Orange Studio Theme"
-                  className={`flex items-center space-x-1 px-2.5 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all ${
+                  className={`flex items-center space-x-1 px-2.5 max-[400px]:px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all ${
                     isOrange 
                       ? 'bg-white text-[#d85104] shadow-sm' 
                       : 'text-white/70 hover:text-white'
@@ -391,7 +406,7 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
                 <button
                   onClick={() => setTheme('light')}
                   title="Light Theme"
-                  className={`flex items-center space-x-1 px-2.5 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all ${
+                  className={`flex items-center space-x-1 px-2.5 max-[400px]:px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all ${
                     isLight 
                       ? 'bg-slate-900 text-white shadow-sm' 
                       : 'text-white/70 hover:text-white'
@@ -403,7 +418,7 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
                 <button
                   onClick={() => setTheme('dark')}
                   title="Dark Theme"
-                  className={`flex items-center space-x-1 px-2.5 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all ${
+                  className={`flex items-center space-x-1 px-2.5 max-[400px]:px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all ${
                     isDark 
                       ? 'bg-white text-black shadow-sm' 
                       : 'text-white/70 hover:text-white'
@@ -418,7 +433,7 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
             {/* GET EARLY ACCESS Button */}
             <button 
               onClick={() => setEarlyAccessOpen(true)}
-              className={`px-4 sm:px-5 py-2 rounded-full text-[9px] sm:text-[10px] uppercase tracking-[0.2em] font-black transition-all shadow-md whitespace-nowrap ${
+              className={`px-4 sm:px-5 max-[400px]:px-3 py-2 rounded-full text-[9px] sm:text-[10px] uppercase tracking-[0.2em] max-[400px]:tracking-[0.15em] font-black transition-all shadow-md whitespace-nowrap ${
                 isOrange
                   ? 'bg-white text-[#d85104] hover:bg-white/90'
                   : isLight

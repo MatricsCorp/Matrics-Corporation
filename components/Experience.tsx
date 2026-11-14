@@ -5,18 +5,25 @@ import { Float } from '@react-three/drei';
 import * as THREE from 'three';
 import Globe from './Globe';
 import Tablet from './Tablet';
+import { pointer } from '../lib/pointer';
 
 interface ExperienceProps {
-  mousePos: { x: number; y: number };
   currentView: 'landing' | 'ecosystem' | 'network' | 'partners' | 'investors' | 'quantum' | 'app';
   theme?: 'orange' | 'light' | 'dark';
 }
 
-const Experience: React.FC<ExperienceProps> = ({ mousePos, currentView, theme = 'orange' }) => {
+// Reused every frame instead of allocating new vectors 60 times a second.
+const targetLookAt = new THREE.Vector3();
+
+const Experience: React.FC<ExperienceProps> = ({ currentView, theme = 'orange' }) => {
   const globeTiltGroupRef = useRef<THREE.Group>(null);
   const globeRotationRef = useRef<THREE.Group>(null);
   const { camera, size } = useThree();
-  const isMobile = size.width < 768;
+  // Portrait tablets (e.g. 768×1024, 820×1180) share the phone layout: the page
+  // is one column there too, and the desktop framing made the globe fill the
+  // screen and slide under the header.
+  const isPortraitTablet = size.width >= 768 && size.width < 1280 && size.height > size.width;
+  const isMobile = size.width < 768 || isPortraitTablet;
   // Below 1280px the landing hero text sits centred under the globe, so the
   // camera tilts down to lift the globe into the top half of the screen
   // (phone ≈ 22–38% of height, laptop ≈ 15–44%; text starts ≈ 55%).
@@ -26,6 +33,7 @@ const Experience: React.FC<ExperienceProps> = ({ mousePos, currentView, theme = 
 
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
+    const mousePos = pointer;
     let targetX, targetY, targetZ;
     let lookAtY = 0;
 
@@ -65,14 +73,11 @@ const Experience: React.FC<ExperienceProps> = ({ mousePos, currentView, theme = 
     camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 0.05);
     camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, 0.05);
     
-    const targetLookAt = new THREE.Vector3(
-      currentView === 'network' || currentView === 'quantum' ? -0.8 : currentView === 'partners' ? -0.5 : currentView === 'investors' ? 0.5 : 0, 
-      lookAtY, 
+    targetLookAt.set(
+      currentView === 'network' || currentView === 'quantum' ? -0.8 : currentView === 'partners' ? -0.5 : currentView === 'investors' ? 0.5 : 0,
+      lookAtY,
       0
     );
-    const currentLookAt = new THREE.Vector3();
-    camera.getWorldDirection(currentLookAt);
-    
     camera.lookAt(targetLookAt);
 
     if (globeTiltGroupRef.current) {

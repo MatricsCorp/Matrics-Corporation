@@ -1,9 +1,12 @@
 
-import React, { Suspense, useState, useEffect } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { ContactShadows, PresentationControls, Environment } from '@react-three/drei';
-import Experience from './components/Experience';
+import React, { Suspense, useState, useEffect, lazy } from 'react';
 import UI from './components/UI';
+import SceneBoundary from './components/SceneBoundary';
+import { trackPointer } from './lib/pointer';
+
+// The 3D globe (three.js, ~1 MB of code) loads in its own file after the page
+// text is already on screen, instead of holding back the whole site.
+const Scene = lazy(() => import('./components/Scene'));
 
 export type AppTheme = 'orange' | 'light' | 'dark';
 export type AppView = 'landing' | 'ecosystem' | 'network' | 'partners' | 'investors' | 'app';
@@ -32,8 +35,7 @@ const getInitialView = (): AppView => {
 };
 
 const App: React.FC = () => {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [currentView, setCurrentView] = useState<AppView>(getInitialView());
+  const [currentView, setCurrentView] = useState<AppView>(getInitialView);
   const [theme, setTheme] = useState<AppTheme>('orange');
 
   // Sync route with browser history
@@ -50,6 +52,8 @@ const App: React.FC = () => {
       if (window.location.pathname !== targetPath) {
         window.history.pushState({ view: newView }, '', targetPath);
       }
+      // A new page opens at its top, not at the scroll position of the last one.
+      window.scrollTo(0, 0);
     }
   };
 
@@ -61,30 +65,10 @@ const App: React.FC = () => {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  // Mouse / touch position for the globe tilt (read by the scene each frame,
+  // so moving the pointer doesn't re-render the page).
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({
-        x: (e.clientX / window.innerWidth) * 2 - 1,
-        y: -(e.clientY / window.innerHeight) * 2 + 1,
-      });
-    };
-
-    // Touch support for camera tilt
-    const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches[0]) {
-        setMousePos({
-          x: (e.touches[0].clientX / window.innerWidth) * 2 - 1,
-          y: -(e.touches[0].clientY / window.innerHeight) * 2 + 1,
-        });
-      }
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('touchmove', handleTouchMove);
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('touchmove', handleTouchMove);
-    };
+    trackPointer();
   }, []);
 
   const getBackgroundStyle = () => {
@@ -104,19 +88,6 @@ const App: React.FC = () => {
     }
   };
 
-  const getShadowProps = () => {
-    switch (theme) {
-      case 'orange':
-        return { color: '#4a1500', opacity: 0.48, blur: 2.8, far: 5 };
-      case 'light':
-        return { color: '#475569', opacity: 0.22, blur: 2.5, far: 4.5 };
-      case 'dark':
-        return { color: '#000000', opacity: 0.4, blur: 2.5, far: 4.5 };
-    }
-  };
-
-  const shadowProps = getShadowProps();
-
   return (
     <div 
       style={getBackgroundStyle()}
@@ -124,58 +95,15 @@ const App: React.FC = () => {
         theme === 'light' 
           ? 'text-slate-900 selection:bg-[#db5319]/25' 
           : 'text-white selection:bg-white/30'
-      } overflow-hidden transition-all duration-700`}
+      } overflow-clip transition-all duration-700`}
     >
       {/* Fixed 3D Canvas with alpha transparency so the studio radial backdrop shines through */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <Canvas
-          shadows
-          // DPR cap is critical for mobile performance
-          dpr={[1, 1.5]}
-          camera={{ position: [0, 0, 9], fov: 45 }}
-          gl={{ antialias: true, alpha: true }}
-        >
-          <ambientLight intensity={theme === 'orange' ? 1.0 : theme === 'light' ? 0.9 : 0.5} color={theme === 'orange' ? '#fff2e5' : '#ffffff'} />
-          <spotLight 
-            position={[8, 12, 9]} 
-            angle={0.25} 
-            penumbra={0.9} 
-            intensity={theme === 'orange' ? 2.8 : theme === 'light' ? 2.5 : 2} 
-            color={theme === 'orange' ? '#fff7ed' : '#ffffff'}
-            castShadow 
-          />
-          {theme === 'orange' && (
-            <directionalLight position={[-8, -4, 4]} intensity={0.6} color="#fed7aa" />
-          )}
-          
+        <SceneBoundary>
           <Suspense fallback={null}>
-            <PresentationControls
-              global
-              snap
-              rotation={[0, 0, 0]}
-              polar={[-Math.PI / 12, Math.PI / 12]}
-              azimuth={[-Math.PI / 6, Math.PI / 6]}
-              config={{ mass: 2, tension: 400 }}
-            >
-              <Experience 
-                mousePos={mousePos} 
-                currentView={currentView} 
-                theme={theme}
-              />
-            </PresentationControls>
-            
-            <ContactShadows 
-              position={[0, -2.5, 0]} 
-              opacity={shadowProps.opacity} 
-              color={shadowProps.color}
-              scale={16} 
-              blur={shadowProps.blur} 
-              far={shadowProps.far} 
-              resolution={256} // Lower res for better perf
-            />
-            <Environment preset={theme === 'dark' ? 'city' : 'studio'} />
+            <Scene currentView={currentView} theme={theme} />
           </Suspense>
-        </Canvas>
+        </SceneBoundary>
       </div>
 
       {/* UI Layer */}
