@@ -105,7 +105,8 @@ const App: React.FC = () => {
       } overflow-clip transition-all duration-700`}
     >
       {/* Fixed 3D Canvas with alpha transparency so the studio radial backdrop shines through */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
+      {/* intro-content: waits during the first-visit intro, so the intro plays on a clean stage */}
+      <div className="intro-content fixed inset-0 z-0 pointer-events-none">
         <SceneBoundary>
           <Suspense fallback={null}>
             <Scene currentView={currentView} theme={theme} />
