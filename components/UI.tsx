@@ -81,6 +81,23 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
   };
   const [legalModal, setLegalModal] = useState<'privacy' | 'terms' | null>(null);
 
+  // Hero scroll cue fades out once the page is scrolled (set directly on the
+  // element so scrolling doesn't re-render the page).
+  const scrollCueRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (view !== 'landing') return;
+    const update = () => {
+      const cue = scrollCueRef.current;
+      if (!cue) return;
+      const hidden = window.scrollY > 40;
+      cue.style.opacity = hidden ? '0' : '1';
+      cue.style.pointerEvents = hidden ? 'none' : '';
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    return () => window.removeEventListener('scroll', update);
+  }, [view]);
+
   // While a pop-up form is open, the page behind it doesn't scroll.
   const anyModalOpen = earlyAccessOpen || partnerLoginOpen || legalModal !== null;
   useEffect(() => {
@@ -493,11 +510,20 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
         {view === 'landing' && (
           <div className="w-full flex flex-col pointer-events-none">
             {/* HERO SECTION */}
-            <section className="min-h-[85vh] flex items-end xl:items-center justify-center xl:justify-end px-4 sm:px-8 xl:px-24 pt-[44vh] pb-12 xl:py-12">
-              <div className="w-full max-w-3xl space-y-6 sm:space-y-8 text-center xl:text-right flex flex-col items-center xl:items-end z-20 pointer-events-auto">
-                
-                {/* Title */}
-                <h1 className="font-black tracking-tighter leading-[0.95] italic uppercase flex flex-col items-center xl:items-end">
+            {/* Text sits right of the globe from 1024px on landscape screens (laptops,
+                non-maximised windows) as well as from 1280px; below that it sits
+                centred under the globe. */}
+            <section className="relative min-h-[85vh] flex items-end lg:landscape:items-center xl:items-center justify-center lg:landscape:justify-end xl:justify-end px-4 sm:px-8 lg:landscape:px-12 xl:px-24 pt-[44vh] pb-12 lg:landscape:py-12 xl:py-12">
+              <div className="w-full max-w-3xl space-y-6 sm:space-y-8 lg:landscape:space-y-6 xl:space-y-8 text-center lg:landscape:text-right xl:text-right flex flex-col items-center lg:landscape:items-end xl:items-end z-20 pointer-events-auto">
+
+                {/* Tagline + Title */}
+                <div className="flex flex-col items-center lg:landscape:items-end xl:items-end gap-3 sm:gap-4">
+                <div className={`text-[10px] sm:text-xs font-mono font-black uppercase tracking-[0.4em] ${
+                  isOrange ? 'text-white/85' : 'text-[#db5319]'
+                }`}>
+                  Every trade, connected.
+                </div>
+                <h1 className="font-black tracking-tighter leading-[0.95] italic uppercase flex flex-col items-center lg:landscape:items-end xl:items-end">
                   <span className={`text-2xl sm:text-3xl xl:text-[2.2vw] ${
                     isLight ? 'text-slate-900' : 'text-white font-semibold'
                   }`}>
@@ -516,6 +542,7 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
                     Matrics Corporation
                   </span>
                 </h1>
+                </div>
 
                 {/* Subhead exactly as required */}
                 <p className={`text-base sm:text-lg lg:text-xl font-bold max-w-xl leading-snug ${
@@ -567,6 +594,19 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
                   </button>
                 </div>
               </div>
+
+              {/* Scroll cue: fades away once the visitor starts scrolling */}
+              <button
+                ref={scrollCueRef}
+                onClick={handleScrollToHowItWorks}
+                aria-label="Scroll down to How Matrics Works"
+                className={`absolute bottom-3 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-[9px] font-mono font-bold uppercase tracking-[0.35em] transition-opacity duration-500 pointer-events-auto ${
+                  isLight ? 'text-slate-500' : 'text-white/75'
+                }`}
+              >
+                <span>Scroll</span>
+                <ArrowDown size={14} className="animate-bounce" />
+              </button>
             </section>
 
             {/* HOW IT WORKS SECTION (Item 3) */}
