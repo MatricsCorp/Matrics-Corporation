@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, MapPin, Building, ShieldCheck } from 'lucide-react';
+import { Mail, MapPin, Building, ShieldCheck, Phone, MessageCircle } from 'lucide-react';
 import type { AppTheme } from '../App';
 
 interface FooterProps {
@@ -64,6 +64,23 @@ const Footer: React.FC<FooterProps> = ({
             >
               <Mail size={13} className="text-[#db5319]" />
               <span>contact@matricscorporation.com</span>
+            </a>
+            <a
+              href="tel:+916264293115"
+              className="flex items-center space-x-1.5 transition-colors font-mono hover:text-[#db5319]"
+            >
+              <Phone size={13} className="text-[#db5319]" />
+              <span>+91 62642 93115</span>
+            </a>
+            <a
+              href="https://wa.me/916264293115"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Chat on WhatsApp: +91 62642 93115"
+              className="flex items-center space-x-1.5 transition-colors font-mono hover:text-[#db5319]"
+            >
+              <MessageCircle size={13} className="text-[#db5319]" />
+              <span>WhatsApp</span>
             </a>
           </div>
         </div>

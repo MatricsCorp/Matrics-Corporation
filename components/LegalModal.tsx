@@ -78,7 +78,8 @@ const LegalModal: React.FC<LegalModalProps> = ({ type, onClose, theme = 'orange'
                 <h3 className={`font-bold mb-1 ${isLight ? 'text-slate-900' : 'text-white'}`}>4. Contact & Regulatory Enquiries</h3>
                 <p>
                   For questions regarding data governance, write to our Data Protection Officer at{' '}
-                  <span className="font-mono text-[#db5319]">contact@matricscorporation.com</span>, or by mail at Level 4, Magneto Offizo, Labhandi, G.E. Road, Raipur, Chhattisgarh 492001, India.
+                  <span className="font-mono text-[#db5319]">contact@matricscorporation.com</span>, call or WhatsApp{' '}
+                  <span className="font-mono text-[#db5319]">+91 62642 93115</span>, or write by post to Level 4, Magneto Offizo, Labhandi, G.E. Road, Raipur, Chhattisgarh 492001, India.
                 </p>
               </div>
             </>

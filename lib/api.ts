@@ -31,9 +31,9 @@ export async function submitLead(lead: LeadInput): Promise<string | null> {
     });
     const json = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: string };
     if (res.ok && json.ok) return null;
-    return json.error || 'Something went wrong. Please call or WhatsApp us instead.';
+    return json.error || 'Something went wrong. Please call or WhatsApp us on +91 62642 93115 instead.';
   } catch {
-    return 'Could not reach our server. Please check your connection or call us.';
+    return 'Could not reach our server. Please check your connection or call / WhatsApp us on +91 62642 93115.';
   }
 }
 
