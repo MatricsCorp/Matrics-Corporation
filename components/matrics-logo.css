@@ -136,7 +136,7 @@ html.intro-pending .mlogo-header *::before { animation-play-state: paused !impor
 .mlogo-intro .mlogo-ring { animation: mlogo-ring-once 0.8s ease-out calc(var(--t0) + var(--at)) forwards; }
 .mlogo-intro .mlogo-spark { animation: mlogo-spark 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) calc(var(--t0) + var(--at)) forwards; }
 .mlogo-intro .mlogo-ember { animation: mlogo-ember 2.2s ease-in-out calc(var(--t0) + var(--at)) forwards; }
-.mlogo-intro .mlogo-glint { animation: mlogo-glint-once 0.8s ease-in-out 0.85s forwards; }
+.mlogo-intro .mlogo-glint { animation: mlogo-glint-once 0.8s ease-in-out calc(var(--t0) + 0.7s) forwards; }
 
 @keyframes mlogo-arc-once {
   0% { opacity: 1; stroke-dashoffset: 0.2; }

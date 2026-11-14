@@ -1,7 +1,8 @@
-/* First-visit intro: the logo flies in along a trade route like a flag, lights
-   up its network, then docks into the header. No dark screen; clicks pass
-   straight through. While it travels the page text waits (so the logo isn't
-   drawn over the headline) and fades in as the logo docks. */
+/* First-visit intro, told as a trade: a road with the stops of a trade, the
+   logo riding it and connecting each stop, lifting off to the centre with
+   "Every trade, connected.", then docking into the header. No dark screen;
+   clicks pass straight through. The page text waits (so nothing is drawn over
+   the headline) and fades in as the logo docks. */
 .intro-content { transition: opacity 0.6s ease; }
 html.intro-hold .intro-content { opacity: 0; }
 
@@ -11,35 +12,103 @@ html.intro-hold .intro-content { opacity: 0; }
   inset: 0;
   z-index: 1000;
   pointer-events: none;
+  color: #fff;
 }
 
-/* ---------- the trade route ---------- */
-.intro-route {
+/* ---------- road and trade line ---------- */
+.intro-road {
   position: absolute;
   inset: 0;
   overflow: visible;
-  transition: opacity 0.5s ease;
 }
-.is-dock .intro-route,
-.is-landed .intro-route { opacity: 0; }
-.intro-route-line {
+.intro-road,
+.intro-stops,
+.intro-tagline { transition: opacity 0.45s ease; }
+.is-dock .intro-road, .is-landed .intro-road,
+.is-dock .intro-stops, .is-landed .intro-stops,
+.is-dock .intro-tagline, .is-landed .intro-tagline { opacity: 0; }
+
+.intro-road-dots {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.75);
-  stroke-width: 2.5;
+  stroke: rgba(255, 255, 255, 0.6);
+  stroke-width: 3;
   stroke-linecap: round;
-  stroke-dasharray: 0.5 9;
+  stroke-dasharray: 0.5 11;
 }
-.intro-route-origin {
-  fill: #fff;
-  animation: intro-origin 1.2s ease-out infinite;
-  transform-box: fill-box;
-  transform-origin: center;
+.intro-trade { fill: none; stroke-linecap: butt; }
+.intro-trade-core { stroke: #fff6e6; stroke-width: 3; }
+.intro-trade-halo { stroke: rgba(255, 240, 214, 0.28); stroke-width: 11; }
+.intro-lift.intro-trade-core { stroke-width: 2.5; }
+
+/* ---------- stops ---------- */
+.intro-stop {
+  --size: 32px;
+  position: absolute;
+  width: var(--size);
+  height: var(--size);
+  margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  background: rgba(60, 18, 0, 0.28);
+  color: rgba(255, 255, 255, 0.85);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1), opacity 0.25s ease, background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
 }
-.intro-route-hub circle { transform-box: fill-box; transform-origin: center; }
-.intro-route-hub-ring { fill: none; stroke: rgba(255, 255, 255, 0.85); stroke-width: 2; opacity: 0; }
-.intro-route-hub-dot { fill: #fff; opacity: 0; }
-.intro-route-hub.is-lit .intro-route-hub-dot { animation: intro-hub-dot 0.35s ease-out forwards; }
-.intro-route-hub.is-lit .intro-route-hub-ring { animation: intro-hub-ring 0.9s ease-out forwards; }
+.is-narrow .intro-stop { --size: 26px; }
+.intro-stop.is-in { opacity: 1; transform: scale(1); }
+.intro-stop.is-on {
+  background: #fff;
+  border-color: #fff;
+  color: #db5319;
+}
+.intro-stop::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  opacity: 0;
+}
+.intro-stop.is-on::after { animation: intro-stop-ping 0.7s ease-out; }
+
+.intro-stop-label {
+  position: absolute;
+  top: calc(100% + 9px);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font: 700 11px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+  text-shadow: 0 1px 6px rgba(70, 20, 0, 0.35);
+  transition: color 0.25s ease;
+}
+.intro-stop.is-on .intro-stop-label { color: #fff; }
+.is-narrow .intro-stop-label { font-size: 9.5px; letter-spacing: 0.1em; top: calc(100% + 7px); }
+.is-narrow .intro-stop.is-low .intro-stop-label { top: calc(100% + 36px); } /* second row, clear of the first */
+
+/* ---------- tagline ---------- */
+.intro-tagline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font: 900 15px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 12px rgba(70, 20, 0, 0.45);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.is-narrow .intro-tagline { font-size: 11px; letter-spacing: 0.28em; }
+@media (max-width: 359px) { .is-narrow .intro-tagline { font-size: 10px; letter-spacing: 0.18em; } }
+.is-tagline .intro-tagline { opacity: 1; transform: none; }
+.is-dock .intro-tagline { transform: translateY(-6px); }
 
 /* Soft shadow pool behind the logo so it reads on the bright page */
 .intro-shade {
@@ -51,11 +120,11 @@ html.intro-hold .intro-content { opacity: 0; }
   transform: translate(-50%, -50%);
   border-radius: 50%;
   background: radial-gradient(ellipse at center, rgba(48, 14, 0, 0.42) 0%, rgba(48, 14, 0, 0.18) 42%, rgba(48, 14, 0, 0) 70%);
-  animation: intro-shade-in 0.6s ease-out 1s backwards; /* appears as the logo arrives; backwards lets the fade-out below take over */
-  transition: opacity 0.45s ease;
+  opacity: 0;
+  transition: opacity 0.6s ease;
 }
-.is-dock .intro-shade,
-.is-landed .intro-shade { opacity: 0; }
+.is-centre .intro-shade { opacity: 1; }
+.is-dock .intro-shade, .is-landed .intro-shade { opacity: 0; transition-duration: 0.45s; }
 
 /* ---------- the logo ---------- */
 .intro-fly {
@@ -74,18 +143,6 @@ html.intro-hold .intro-content { opacity: 0; }
   transform-origin: 50% 50%;
   will-change: transform, opacity;
 }
-.intro-flag {
-  position: absolute;
-  inset: 0;
-  filter: drop-shadow(0 10px 28px rgba(60, 16, 0, 0.5));
-}
-.intro-flag-strip {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  background-repeat: no-repeat;
-  will-change: transform;
-}
 .intro-bob {
   position: absolute;
   inset: 0;
@@ -93,6 +150,8 @@ html.intro-hold .intro-content { opacity: 0; }
 }
 .intro-logo { width: 100%; }
 .intro-logo .mlogo-base { filter: drop-shadow(0 10px 28px rgba(60, 16, 0, 0.5)); }
+/* the grid light starts as the logo nears the centre */
+.intro-float .mlogo-intro { --t0: 2.4s; }
 
 /* Freeze the bob while docking so the logo lands exactly on the header one */
 .is-dock .intro-bob,
@@ -103,19 +162,7 @@ html.intro-hold .intro-content { opacity: 0; }
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
 }
-@keyframes intro-shade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-@keyframes intro-origin {
+@keyframes intro-stop-ping {
   0% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0.35; transform: scale(1.8); }
-}
-@keyframes intro-hub-dot {
-  from { opacity: 0; transform: scale(0.2); }
-  to { opacity: 1; transform: scale(1); }
-}
-@keyframes intro-hub-ring {
-  0% { opacity: 1; transform: scale(0.4); }
-  100% { opacity: 0; transform: scale(2.2); }
+  100% { opacity: 0; transform: scale(2); }
 }
