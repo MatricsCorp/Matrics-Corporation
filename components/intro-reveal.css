@@ -1,0 +1,244 @@
+/* First-visit intro, told as a trade: a glowing snake path in perspective with
+   the stops of a trade, the Matrics flag riding it, rising to the centre with
+   its tail of light, a burst, "Every trade, connected.", then docking into
+   the header. No dark screen; clicks pass straight through. The page text
+   waits (so nothing is drawn over the headline) and fades in as the logo docks. */
+.intro-content { transition: opacity 0.6s ease 0.25s; } /* starts after the intro tagline has gone */
+html.intro-hold .intro-content { opacity: 0; }
+
+.intro-float {
+  --intro-w: min(72vw, 640px);
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+  color: #fff;
+}
+
+/* Warm vignette and a soft horizon glow, so the light reads (not a dark screen) */
+.intro-scene {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, transparent calc(var(--horizon, 38vh) - 70px), rgba(255, 214, 160, 0.16) var(--horizon, 38vh), transparent calc(var(--horizon, 38vh) + 90px)),
+    radial-gradient(ellipse 120% 90% at 50% 55%, rgba(40, 10, 0, 0) 35%, rgba(40, 10, 0, 0.42) 100%);
+  opacity: 0;
+  animation: intro-fade-in 0.5s ease-out forwards;
+  transition: opacity 0.5s ease;
+}
+.is-dock .intro-scene, .is-landed .intro-scene { opacity: 0 !important; animation: none; }
+
+.intro-ground {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  transition: opacity 0.45s ease;
+}
+.is-dock .intro-ground, .is-landed .intro-ground,
+.is-dock .intro-burst, .is-landed .intro-burst { opacity: 0; }
+
+/* ---------- the snake path ---------- */
+/* once the logo is up, the path dims so the logo and tagline read cleanly */
+.intro-route { transition: opacity 0.6s ease; }
+.is-centre .intro-route { opacity: 0.3; }
+.intro-snake-line { fill: none; stroke: rgba(255, 226, 180, 0.45); stroke-width: 1.2; }
+.intro-snake-dot { fill: #ffe9c2; }
+.intro-comet { fill: none; stroke: #fff8e6; stroke-width: 3.5; stroke-linecap: round; }
+.intro-head { mix-blend-mode: screen; }
+.intro-trade { fill: none; stroke-linecap: butt; }
+.intro-trade-core { stroke: #fff4dc; stroke-width: 2; }
+.intro-trade-halo { stroke: rgba(255, 214, 140, 0.35); stroke-width: 8; }
+
+/* ---------- stops ---------- */
+.intro-stop { opacity: 0; transition: opacity 0.3s ease; }
+.intro-stop.is-in { opacity: 1; }
+.intro-stop ellipse { transform-box: fill-box; transform-origin: center; }
+.intro-stop-ring { fill: rgba(255, 210, 150, 0.12); stroke: rgba(255, 236, 205, 0.75); stroke-width: 1.5; }
+.intro-stop-core { fill: rgba(255, 240, 210, 0.55); transition: fill 0.25s ease; }
+.intro-stop-ripple { fill: none; stroke: #fff; stroke-width: 2; opacity: 0; }
+.intro-stop.is-on .intro-stop-ring { fill: rgba(255, 236, 200, 0.35); stroke: #fff; }
+.intro-stop.is-on .intro-stop-core { fill: #fff; }
+.intro-stop.is-on .intro-stop-ripple { animation: intro-ripple 0.8s ease-out forwards; }
+.intro-stop-label {
+  fill: rgba(255, 245, 230, 0.75);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  paint-order: stroke;
+  stroke: rgba(70, 20, 0, 0.35);
+  stroke-width: 3px;
+  transition: fill 0.25s ease;
+}
+.intro-stop.is-on .intro-stop-label { fill: #fff; }
+
+/* ---------- light streaks and the tail ---------- */
+.intro-streak {
+  fill: none;
+  stroke: rgba(255, 232, 196, 0.72);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-dasharray: 0.32 1.4;
+  stroke-dashoffset: 0.4;
+  opacity: 0;
+}
+.is-streaks .intro-streak {
+  animation: intro-streak 1.9s cubic-bezier(0.35, 0, 0.25, 1) calc(var(--k) * 0.09s) forwards;
+}
+.intro-tail line { stroke-linecap: round; }
+.intro-tail-core { stroke: #fff4dc; }
+.intro-tail-side { stroke: #ffc27a; }
+
+/* ---------- burst ---------- */
+.intro-burst { position: absolute; width: 0; height: 0; transition: opacity 0.4s ease; }
+.intro-burst::before {
+  content: '';
+  position: absolute;
+  left: -60px;
+  top: -60px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 252, 235, 0.95) 0%, rgba(255, 210, 130, 0.55) 30%, rgba(255, 170, 60, 0) 70%);
+  opacity: 0;
+  transform: scale(0.2);
+}
+.intro-burst span {
+  position: absolute;
+  left: 0;
+  top: -1px;
+  width: var(--l);
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(255, 250, 230, 0.95), rgba(255, 200, 110, 0.6) 55%, rgba(255, 170, 60, 0));
+  transform-origin: 0 50%;
+  transform: rotate(var(--a)) scaleX(0);
+  opacity: 0;
+}
+.is-burst .intro-burst::before { animation: intro-flash 0.7s ease-out forwards; }
+.is-burst .intro-burst span { animation: intro-ray 0.75s cubic-bezier(0.2, 0.7, 0.3, 1) forwards; }
+
+/* ---------- tagline ---------- */
+.intro-tagline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font: 900 15px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  text-shadow: 0 2px 12px rgba(70, 20, 0, 0.45);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.is-narrow .intro-tagline { font-size: 11px; letter-spacing: 0.28em; }
+@media (max-width: 359px) { .is-narrow .intro-tagline { font-size: 10px; letter-spacing: 0.18em; } }
+.is-tagline .intro-tagline { opacity: 1; transform: none; }
+.is-dock .intro-tagline, .is-landed .intro-tagline { opacity: 0; transform: translateY(-6px); transition-duration: 0.2s; }
+
+/* Soft shadow pool behind the logo so it reads on the bright page */
+.intro-shade {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: min(130vw, 1000px);
+  aspect-ratio: 2.6;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(48, 14, 0, 0.36) 0%, rgba(48, 14, 0, 0.14) 42%, rgba(48, 14, 0, 0) 70%);
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+.is-centre .intro-shade { opacity: 1; }
+.is-dock .intro-shade, .is-landed .intro-shade { opacity: 0; transition-duration: 0.45s; }
+
+/* ---------- the logo / flag ---------- */
+.intro-fly {
+  position: absolute;
+  width: var(--intro-w);
+  left: calc(50% - var(--intro-w) / 2);
+  top: calc(45% - var(--intro-w) / 8.15); /* logo is 4.075 : 1 */
+  transform-origin: 0 0;
+  perspective: 900px;
+  will-change: transform;
+}
+.intro-travel {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1630 / 400;
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+}
+.intro-pole {
+  position: absolute;
+  left: -1.6%;
+  top: -5%;
+  width: max(2px, 0.7%);
+  height: 171%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #c8925e, #fff2df 45%, #b07a48);
+  box-shadow: 0 0 6px rgba(255, 220, 170, 0.5);
+}
+.intro-flag {
+  --cloth: 0.85;
+  position: absolute;
+  inset: 0;
+  filter: drop-shadow(0 8px 18px rgba(60, 16, 0, 0.45));
+}
+.intro-flag-strip {
+  --dark: 0;
+  --light: 0;
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background-image:
+    linear-gradient(rgba(255, 244, 228, var(--light)), rgba(255, 244, 228, var(--light))),
+    linear-gradient(rgba(50, 12, 0, var(--dark)), rgba(50, 12, 0, var(--dark))),
+    url('/brand/matrics-grid.webp'),
+    linear-gradient(180deg, rgba(196, 84, 18, var(--cloth)), rgba(138, 48, 6, var(--cloth)));
+  background-repeat: no-repeat;
+  will-change: transform;
+}
+.intro-bob {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  animation: intro-bob 2.6s ease-in-out infinite;
+}
+.is-real .intro-bob { opacity: 1; }
+.is-real .intro-flag, .is-real .intro-pole { visibility: hidden; }
+.intro-logo { width: 100%; }
+.intro-logo .mlogo-base { filter: drop-shadow(0 10px 28px rgba(60, 16, 0, 0.5)); }
+/* the grid light starts as the logo arrives in the centre */
+.intro-float .mlogo-intro { --t0: 3s; }
+
+/* Freeze the bob while docking so the logo lands exactly on the header one */
+.is-dock .intro-bob,
+.is-landed .intro-bob { animation-play-state: paused; }
+.is-landed .intro-fly { opacity: 0; transition: opacity 0.3s ease; }
+
+@keyframes intro-fade-in { to { opacity: 1; } }
+@keyframes intro-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes intro-ripple {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(2.6); }
+}
+@keyframes intro-streak {
+  0% { opacity: 0; stroke-dashoffset: 0.4; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { opacity: 0; stroke-dashoffset: -1.1; }
+}
+@keyframes intro-flash {
+  0% { opacity: 1; transform: scale(0.2); }
+  100% { opacity: 0; transform: scale(2.2); }
+}
+@keyframes intro-ray {
+  0% { opacity: 1; transform: rotate(var(--a)) scaleX(0.05); }
+  60% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(var(--a)) scaleX(1) translateX(30%); }
+}

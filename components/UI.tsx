@@ -35,6 +35,7 @@ import AppDownload from './AppDownload';
 import EarlyAccessModal from './EarlyAccessModal';
 import PartnerLoginModal from './PartnerLoginModal';
 import LegalModal from './LegalModal';
+import MatricsLogo from './MatricsLogo';
 
 interface UIProps {
   view: AppView;
@@ -313,27 +314,29 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
       {/* ========================================================================= */}
       <header className={`sticky top-0 w-full z-[300] backdrop-blur-xl border-b transition-all duration-300 ${
         isLight 
-          ? 'bg-white/90 border-slate-200/90 shadow-sm' 
+          ? 'bg-white/60 border-slate-200/70 shadow-sm' 
           : isOrange
-            ? 'bg-stone-950/70 border-white/10 shadow-lg'
-            : 'bg-[#0a0500]/80 border-white/10'
+            ? 'bg-stone-950/25 border-white/15 shadow-md'
+            : 'bg-[#0a0500]/50 border-white/10'
       }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-3.5 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-3.5 flex items-center justify-between gap-2.5">
           
           {/* Zone 1: Single Brand Element */}
           <button 
             onClick={() => setView('landing')} 
-            className="flex items-center space-x-3 text-left group"
+            aria-label="Matrics — home"
+            className="shrink-0 flex items-center text-left group"
           >
-            <span className={`text-2xl sm:text-3xl font-black italic tracking-tighter transition-transform duration-300 group-hover:scale-105 ${
-              isOrange ? 'text-white' : 'text-[#db5319]'
-            }`}>
-              Matrics
-            </span>
+            {/* Animated grid logo: light runs along the grid on load and every few seconds */}
+            <MatricsLogo
+              variant="header"
+              onLight={isLight}
+              className="h-[18px] min-[22.5rem]:h-[26px] min-[24.375rem]:h-7 sm:h-9 xl:h-10 transition-transform duration-300 group-hover:scale-105"
+            />
           </button>
 
           {/* Zone 2: 4 Clean Navigation Links */}
-          <nav className="hidden lg:flex items-center space-x-6 xl:space-x-10 text-[10px] uppercase font-bold tracking-[0.25em]">
+          <nav className="hidden lg:flex items-center space-x-4 min-[73.75rem]:space-x-6 xl:space-x-10 text-[10px] uppercase font-bold tracking-[0.25em]">
             <button 
               onClick={() => setView('ecosystem')} 
               className={`transition-all pb-1 ${
@@ -387,7 +390,7 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
           </nav>
 
           {/* Zone 3: Actions (Theme switcher + GET EARLY ACCESS button) */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
+          <div className="flex items-center space-x-2 max-[439px]:space-x-1.5 sm:space-x-3">
             {/* Staff & channel-partner login (case-management app) */}
             <button
               onClick={openPartnerLogin}
@@ -406,38 +409,38 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
                 <button
                   onClick={() => setTheme('orange')}
                   title="Orange Studio Theme"
-                  className={`flex items-center space-x-1 px-2.5 max-[400px]:px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all ${
+                  className={`flex items-center space-x-1 px-2.5 max-[439px]:px-1.5 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all ${
                     isOrange 
                       ? 'bg-white text-[#d85104] shadow-sm' 
-                      : 'text-white/70 hover:text-white'
+                      : isLight ? 'text-slate-500 hover:text-slate-900' : 'text-white/70 hover:text-white'
                   }`}
                 >
                   <Sparkles size={10} className={isOrange ? 'text-[#d85104]' : 'text-amber-300'} />
-                  <span className="hidden sm:inline">Studio</span>
+                  <span className="hidden sm:inline lg:hidden min-[73.75rem]:inline">Studio</span>
                 </button>
                 <button
                   onClick={() => setTheme('light')}
                   title="Light Theme"
-                  className={`flex items-center space-x-1 px-2.5 max-[400px]:px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all ${
+                  className={`flex items-center space-x-1 px-2.5 max-[439px]:px-1.5 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all ${
                     isLight 
                       ? 'bg-slate-900 text-white shadow-sm' 
                       : 'text-white/70 hover:text-white'
                   }`}
                 >
                   <Sun size={10} className={isLight ? 'text-amber-400' : ''} />
-                  <span className="hidden sm:inline">Light</span>
+                  <span className="hidden sm:inline lg:hidden min-[73.75rem]:inline">Light</span>
                 </button>
                 <button
                   onClick={() => setTheme('dark')}
                   title="Dark Theme"
-                  className={`flex items-center space-x-1 px-2.5 max-[400px]:px-2 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all ${
+                  className={`flex items-center space-x-1 px-2.5 max-[439px]:px-1.5 py-1 rounded-full text-[8px] font-black uppercase tracking-widest transition-all ${
                     isDark 
                       ? 'bg-white text-black shadow-sm' 
-                      : 'text-white/70 hover:text-white'
+                      : isLight ? 'text-slate-500 hover:text-slate-900' : 'text-white/70 hover:text-white'
                   }`}
                 >
                   <Moon size={10} className={isDark ? 'text-amber-400' : ''} />
-                  <span className="hidden sm:inline">Dark</span>
+                  <span className="hidden sm:inline lg:hidden min-[73.75rem]:inline">Dark</span>
                 </button>
               </div>
             )}
@@ -445,7 +448,7 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
             {/* GET EARLY ACCESS Button */}
             <button 
               onClick={() => setEarlyAccessOpen(true)}
-              className={`px-4 sm:px-5 max-[400px]:px-3 py-2 rounded-full text-[9px] sm:text-[10px] uppercase tracking-[0.2em] max-[400px]:tracking-[0.15em] font-black transition-all shadow-md whitespace-nowrap ${
+              className={`px-4 sm:px-5 max-[439px]:px-3 py-2 rounded-full text-[9px] sm:text-[10px] uppercase tracking-[0.2em] max-[439px]:tracking-[0.12em] font-black transition-all shadow-md whitespace-nowrap ${
                 isOrange
                   ? 'bg-white text-[#d85104] hover:bg-white/90'
                   : isLight
@@ -453,7 +456,7 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
                     : 'bg-white text-black hover:bg-slate-200'
               }`}
             >
-              Get Early Access
+              <span className="max-[439px]:hidden">Get </span>Early Access
             </button>
           </div>
         </div>
@@ -497,7 +500,7 @@ const UI: React.FC<UIProps> = ({ view, setView, theme = 'orange', setTheme }) =>
       {/* ========================================================================= */}
       {/* MAIN CONTENT CONTAINER */}
       {/* ========================================================================= */}
-      <main className="relative flex-1 flex flex-col">
+      <main className="intro-content relative flex-1 flex flex-col">
         
         {/* ======================================================================= */}
         {/* VIEW 1: LANDING HERO + HOW IT WORKS */}

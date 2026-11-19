@@ -10,6 +10,21 @@
     <!-- Start downloading the globe's texture and lighting while the page code loads. -->
     <link rel="preload" href="/textures/earth_atmos_2048.jpg" as="image" crossorigin="anonymous" fetchpriority="low" />
     <link rel="preload" href="/hdri/studio_small_03_1k.hdr" as="fetch" crossorigin="anonymous" fetchpriority="low" />
+    <script>
+      // First visit: fetch the floating intro logo early
+      // (the reveal itself is in components/IntroReveal.tsx; ?intro replays it).
+      try {
+        var replay = /[?&]intro(=|&|$)/.test(location.search);
+        var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (replay || (!calm && !localStorage.getItem('matrics-intro-seen'))) {
+          document.documentElement.classList.add('intro-pending', 'intro-hold');
+          var link = document.createElement('link');
+          link.rel = 'preload'; link.as = 'image'; link.href = '/brand/matrics-grid.webp';
+          link.setAttribute('fetchpriority', 'high');
+          document.head.appendChild(link);
+        }
+      } catch (e) {}
+    </script>
     <style>
       /* The page scrolls (it used to be locked by overflow:hidden, so the mouse
          wheel and touch could not move it). Sideways overflow stays clipped and
